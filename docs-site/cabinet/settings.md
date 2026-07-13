@@ -107,3 +107,4 @@
 | `BANNER_ENABLED` + `BANNER_*` | вкл | Фото-баннеры над экранами бота: общий дефолт + свой на каждый экран |
 | `WEB_CABINET_ENABLED` | выкл | Продажи с сайта без Telegram (email-логин, SMTP, OAuth) — см. [/features/site-sales](/features/site-sales) |
 | `MTPROTO_PROXY_ENABLED` | выкл | Кнопка MTProto-прокси в боте и миниаппе |
+| `LANDING_TELEGRAM_GATEWAY_ENABLED` | выкл | Публичная двухшаговая воронка: MTProto-прокси → Telegram-бот |

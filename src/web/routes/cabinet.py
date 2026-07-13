@@ -10,6 +10,7 @@ from __future__ import annotations
 import contextlib
 import math
 from typing import Any
+from urllib.parse import parse_qs, urlparse
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
@@ -51,6 +52,27 @@ def _proxy_link(raw: str) -> str:
     if raw.startswith("t.me/"):
         return "https://" + raw
     return raw
+
+
+def _public_proxy_link(raw: str) -> str | None:
+    """Return a safe Telegram MTProto link suitable for the public landing API."""
+    normalized = _proxy_link(raw)
+    try:
+        parsed = urlparse(normalized)
+        query = parse_qs(parsed.query, keep_blank_values=True)
+        port = int(query.get("port", [""])[0])
+    except (TypeError, ValueError):
+        return None
+    if (
+        parsed.scheme != "https"
+        or (parsed.hostname or "").lower() not in {"t.me", "telegram.me"}
+        or parsed.path.rstrip("/") != "/proxy"
+        or not query.get("server", [""])[0]
+        or not query.get("secret", [""])[0]
+        or not 1 <= port <= 65535
+    ):
+        return None
+    return normalized
 
 
 async def cabinet_user(request: Request, container: AppContainer = Depends(get_container)) -> User:
@@ -265,22 +287,27 @@ async def public_plans(container: AppContainer = Depends(get_container)) -> dict
 async def public_landing(container: AppContainer = Depends(get_container)) -> dict[str, Any]:
     """Everything the public marketing site (served at ``/``) needs, unauthenticated:
     the chosen theme + branding, hero/features/FAQ copy, the tariff list, and where the
-    «Личный кабинет» button points (the web auth window or the Telegram bot)."""
+    «Личный кабинет» button points (web auth, Telegram bot, or the proxy gateway)."""
     async with container.uow() as uow:
         cfg = container.bot_config
         miniapp = await uow.miniapp.get_or_create()
         landing = dict((miniapp.ui or {}).get("landing") or {})
         web_enabled = bool(await cfg.value(uow, "WEB_CABINET_ENABLED"))
         bot_username = str(await cfg.value(uow, "BOT_USERNAME") or "")
+        gateway_enabled = bool(await cfg.value(uow, "LANDING_TELEGRAM_GATEWAY_ENABLED"))
+        proxy_url = _public_proxy_link(str(await cfg.value(uow, "MTPROTO_PROXY_URL") or ""))
         # The web cabinet is always mounted at /web on this same origin. Use the relative
         # path (not CABINET_URL, which may be a bare domain now fronted by this landing —
         # that would loop the «Личный кабинет» button back here).
         cabinet_url = "/web/"
         await uow.commit()
-    # No web cabinet → the CTA can only go to the bot, whatever the admin picked.
+    gateway_ready = bool(gateway_enabled and proxy_url and bot_username)
+    # Never leave the public CTA on a route that cannot complete its job.
     target = landing.get("cta_target") or "web"
     if target == "web" and not web_enabled:
         target = "bot"
+    elif target == "telegram" and not gateway_ready:
+        target = "bot" if bot_username else ("web" if web_enabled else "bot")
     return {
         "enabled": landing.get("enabled", True),
         "template": miniapp.template,
@@ -294,6 +321,8 @@ async def public_landing(container: AppContainer = Depends(get_container)) -> di
         "cta_target": target,
         "bot_username": bot_username,
         "cabinet_url": cabinet_url,
+        "telegram_gateway_url": "/telegram/" if gateway_ready else None,
+        "mtproto_proxy_url": proxy_url if gateway_ready else None,
         "currency": "RUB",
         "plans": await _plan_items(container),
     }
