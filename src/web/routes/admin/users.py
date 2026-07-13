@@ -370,3 +370,45 @@ async def reset_traffic(
         await audit(uow, identity, "user.reset_traffic", f"user:{user_id}")
         await uow.commit()
     return OkOut()
+
+
+@router.post("/{user_id}/reset-subscription", response_model=OkOut)
+async def reset_subscription(
+    user_id: int,
+    identity: AdminIdentity = Depends(require_admin),
+    container: AppContainer = Depends(get_container),
+) -> OkOut:
+    """Disable and detach the current subscription while retaining its audit history."""
+    async with container.uow() as uow:
+        user = await uow.users.get(user_id)
+        if user is None:
+            raise HTTPException(404, "user not found")
+        if not user.current_subscription_id:
+            raise HTTPException(400, "user has no subscription")
+        sub = await uow.subscriptions.get(user.current_subscription_id)
+        if sub is None:
+            raise HTTPException(400, "subscription missing")
+
+        # Panel-first: never report a successful local reset while VPN access is still live.
+        # Repeating disable/drop is safe if a previous attempt only partially completed.
+        if sub.remnawave_uuid is not None:
+            try:
+                await container.remnawave_client.disable_user(sub.remnawave_uuid)
+                await container.remnawave_client.drop_connections(sub.remnawave_uuid)
+            except RemnawaveError as exc:
+                raise HTTPException(502, f"panel error: {exc}") from exc
+
+        old_subscription_id = sub.id
+        sub.status = SubscriptionStatus.DISABLED
+        sub.autopay_enabled = False
+        sub.autopay_card_enabled = False
+        user.current_subscription_id = None
+        await audit(
+            uow,
+            identity,
+            "user.reset_subscription",
+            f"user:{user_id}",
+            subscription_id=old_subscription_id,
+        )
+        await uow.commit()
+    return OkOut()

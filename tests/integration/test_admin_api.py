@@ -201,6 +201,121 @@ async def test_plans_endpoint_survives_malformed_snapshot(
     assert row["sales"] == 1  # only the clean numeric plan_id is counted; poison/None skipped
 
 
+async def test_delete_plan_detaches_subscriptions_and_preserves_history(
+    client: tuple[httpx.AsyncClient, ApiTestContainer],
+) -> None:
+    from src.application.dto.pricing import PurchaseRequest
+    from src.core.enums import Currency, PurchaseType
+    from tests.factories import make_plan, make_user
+
+    http, container = client
+    async with container.uow() as uow:
+        user = await make_user(uow, telegram_id=901)
+        plan, _ = await make_plan(uow, code="retired", name="Retired plan")
+        req = PurchaseRequest(
+            user_id=user.id,
+            plan_id=plan.id,
+            duration_days=30,
+            currency=Currency.RUB,
+        )
+        sub = await container.subscriptions.grant(uow, user=user, plan=plan, req=req)
+        await uow.commit()
+        plan_id, sub_id, panel_uuid = plan.id, sub.id, sub.remnawave_uuid
+
+    auth = await _login(http)
+    res = await http.delete(f"/api/admin/plans/{plan_id}", headers=auth)
+    assert res.status_code == 200, res.text
+
+    async with container.uow() as uow:
+        assert await uow.plans.get(plan_id) is None
+        saved = await uow.subscriptions.get(sub_id)
+        owner = await uow.users.get(user.id)
+        assert saved is not None and saved.plan_id is None
+        assert saved.plan_snapshot["name"] == "Retired plan"
+        assert owner is not None and owner.current_subscription_id == sub_id
+        replacement, _ = await make_plan(uow, code="replacement")
+        purchase_type, target_sub_id = await container.purchase.resolve_purchase_type(
+            uow, user.id, replacement.id
+        )
+        assert (purchase_type, target_sub_id) == (PurchaseType.CHANGE, sub_id)
+    assert panel_uuid is not None
+    assert container.remnawave_client.users[panel_uuid].is_enabled is True
+
+
+async def test_reset_subscription_disables_panel_and_detaches_current(
+    client: tuple[httpx.AsyncClient, ApiTestContainer],
+) -> None:
+    from src.application.dto.pricing import PurchaseRequest
+    from src.core.enums import Currency, SubscriptionStatus
+    from tests.factories import make_plan, make_user
+
+    http, container = client
+    async with container.uow() as uow:
+        user = await make_user(uow, telegram_id=902)
+        plan, _ = await make_plan(uow, code="resettable")
+        req = PurchaseRequest(
+            user_id=user.id,
+            plan_id=plan.id,
+            duration_days=30,
+            currency=Currency.RUB,
+        )
+        sub = await container.subscriptions.grant(uow, user=user, plan=plan, req=req)
+        sub.autopay_enabled = True
+        sub.autopay_card_enabled = True
+        await uow.commit()
+        user_id, sub_id, panel_uuid = user.id, sub.id, sub.remnawave_uuid
+
+    auth = await _login(http)
+    res = await http.post(f"/api/admin/users/{user_id}/reset-subscription", headers=auth)
+    assert res.status_code == 200, res.text
+    assert panel_uuid is not None
+    assert container.remnawave_client.users[panel_uuid].is_enabled is False
+
+    async with container.uow() as uow:
+        saved = await uow.subscriptions.get(sub_id)
+        owner = await uow.users.get(user_id)
+        assert saved is not None and saved.status is SubscriptionStatus.DISABLED
+        assert saved.autopay_enabled is False and saved.autopay_card_enabled is False
+        assert owner is not None and owner.current_subscription_id is None
+
+
+async def test_reset_subscription_keeps_local_state_when_panel_fails(
+    client: tuple[httpx.AsyncClient, ApiTestContainer], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from src.application.dto.pricing import PurchaseRequest
+    from src.core.enums import Currency, SubscriptionStatus
+    from src.core.exceptions import RemnawaveError
+    from tests.factories import make_plan, make_user
+
+    http, container = client
+    async with container.uow() as uow:
+        user = await make_user(uow, telegram_id=903)
+        plan, _ = await make_plan(uow, code="panel-failure")
+        req = PurchaseRequest(
+            user_id=user.id,
+            plan_id=plan.id,
+            duration_days=30,
+            currency=Currency.RUB,
+        )
+        sub = await container.subscriptions.grant(uow, user=user, plan=plan, req=req)
+        await uow.commit()
+        user_id, sub_id = user.id, sub.id
+
+    async def fail_disable(_panel_uuid: object) -> None:
+        raise RemnawaveError("offline")
+
+    monkeypatch.setattr(container.remnawave_client, "disable_user", fail_disable)
+    auth = await _login(http)
+    res = await http.post(f"/api/admin/users/{user_id}/reset-subscription", headers=auth)
+    assert res.status_code == 502
+
+    async with container.uow() as uow:
+        saved = await uow.subscriptions.get(sub_id)
+        owner = await uow.users.get(user_id)
+        assert saved is not None and saved.status is SubscriptionStatus.ACTIVE
+        assert owner is not None and owner.current_subscription_id == sub_id
+
+
 async def test_bad_password_401(client: tuple[httpx.AsyncClient, ApiTestContainer]) -> None:
     http, _ = client
     res = await http.post(

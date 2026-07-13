@@ -6,11 +6,12 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 
 from src.core.enums import Currency, TransactionStatus, TransactionType
 from src.infrastructure.database.models.constructor import ConstructorPeriod, TrafficPack
 from src.infrastructure.database.models.plan import Plan, PlanDuration, PlanPrice
+from src.infrastructure.database.models.subscription import Subscription
 from src.infrastructure.database.models.transaction import Transaction
 from src.infrastructure.di import AppContainer
 from src.web.deps import get_container
@@ -204,12 +205,23 @@ async def delete_plan(
         plan = await uow.plans.get(plan_id)
         if plan is None:
             raise HTTPException(404, "plan not found")
-        # RESTRICT on subscriptions.plan_id protects sold plans; deactivate instead.
-        active_refs = await uow.subscriptions.count(plan_id=plan_id)
-        if active_refs:
-            raise HTTPException(409, "plan has subscriptions — deactivate it instead")
+        # A subscription owns a frozen plan_snapshot, so the catalogue row is not its audit
+        # history. Detach every historical/live subscription before deleting the plan; this
+        # preserves access, payments and snapshots while intentionally preventing renewal of a
+        # product the owner removed from sale. ``plan_id`` is nullable by design.
+        refs = await uow.subscriptions.count(plan_id=plan_id)
+        if refs:
+            await uow.session.execute(
+                update(Subscription).where(Subscription.plan_id == plan_id).values(plan_id=None)
+            )
         await uow.plans.delete(plan)
-        await audit(uow, identity, "plan.delete", f"plan:{plan.name}")
+        await audit(
+            uow,
+            identity,
+            "plan.delete",
+            f"plan:{plan.name}",
+            detached_subscriptions=refs,
+        )
         await uow.commit()
     return OkOut()
 

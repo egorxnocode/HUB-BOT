@@ -153,8 +153,10 @@ class PurchaseService:
         if sub is not None and sub.status.is_usable:
             if sub.plan_id == plan_id:
                 return PurchaseType.RENEW, sub.id
-            if sub.plan_id is not None:  # constructor subs change via the constructor flow
-                return PurchaseType.CHANGE, sub.id
+            # A deleted catalogue plan leaves ``plan_id=None`` while keeping the live
+            # subscription and its snapshot. Buying another plan must CHANGE that same panel
+            # user, never create a second enabled panel identity and orphan the old access.
+            return PurchaseType.CHANGE, sub.id
         return PurchaseType.NEW, None
 
     async def checkout_from_balance(
