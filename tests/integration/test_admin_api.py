@@ -431,8 +431,13 @@ async def test_public_landing_telegram_gateway_is_independent_from_bot_button(
     assert public["cta_target"] == "telegram"
     assert public["telegram_gateway_url"] == "/telegram/"
     assert public["mtproto_proxy_url"] == proxy_url
-    assert "Откройте кабинет в Telegram" in (await http.get("/telegram/")).text
-    assert (await http.get("/telegram/gateway.js")).status_code == 200
+    gateway_page = (await http.get("/telegram/")).text
+    gateway_js = (await http.get("/telegram/gateway.js")).text
+    assert "Открыть прокси в Telegram" in gateway_page
+    assert "Открыть бота в приложении Telegram" in gateway_page
+    assert '"tg://proxy"' in gateway_js
+    assert '"tg://resolve?domain="' in gateway_js
+    assert '"https://t.me/" + clean' not in gateway_js
 
     res = await http.patch(
         "/api/admin/settings",

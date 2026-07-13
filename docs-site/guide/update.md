@@ -12,7 +12,7 @@ cd HUB-BOT && ./scripts/update.sh
 
 1. **Бэкап БД.** `pg_dump` из контейнера postgres в `backups/pre-update-<дата-время>.sql.gz`. Если бэкап не снялся или пустой — обновление отменяется, дальше скрипт не идёт (частая причина: стек не запущен).
 2. **`git pull --ff-only`.** Локальная история никогда не переписывается. Если pull не прошёл из-за локальных правок — `git stash`, затем повторить. Скрипт показывает список приехавших коммитов; если версия уже последняя — всё равно пересобирает образы.
-3. **Пересборка и перезапуск.** `docker compose build` + `up -d` по `docker/compose.prod.yml`.
+3. **Пересборка и перезапуск.** `docker compose build` + `up -d` по `docker/compose.prod.yml`. Скрипт всегда передаёт корневой `.env` через `--env-file`, поэтому интерполяция Compose не зависит от его версии.
 4. **Миграции и health-гейт.** Миграции Alembic web-контейнер применяет сам при старте; скрипт ждёт `/health` до 3 минут и подтверждает успех с номером ревизии и путём к бэкапу.
 
 ## Если обновление не поднялось
@@ -21,14 +21,14 @@ cd HUB-BOT && ./scripts/update.sh
 
 ```bash
 # логи
-docker compose -f docker/compose.prod.yml logs --tail 100 web
+docker compose --env-file .env -f docker/compose.prod.yml logs --tail 100 web
 
 # откат кода на ревизию до обновления
-git checkout <старая-ревизия> && docker compose -f docker/compose.prod.yml up -d --build
+git checkout <старая-ревизия> && docker compose --env-file .env -f docker/compose.prod.yml up -d --build
 
 # восстановление БД из снятого бэкапа
 gunzip -c backups/pre-update-<штамп>.sql.gz | \
-  docker compose -f docker/compose.prod.yml exec -T postgres psql -U vpn vpn
+  docker compose --env-file .env -f docker/compose.prod.yml exec -T postgres psql -U vpn vpn
 ```
 
 ::: tip
