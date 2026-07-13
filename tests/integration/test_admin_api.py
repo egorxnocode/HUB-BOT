@@ -401,6 +401,51 @@ async def test_settings_patch_and_search(
     assert res.status_code == 400
 
 
+async def test_public_landing_telegram_gateway_is_independent_from_bot_button(
+    client: tuple[httpx.AsyncClient, ApiTestContainer],
+) -> None:
+    http, _ = client
+    auth = await _login(http)
+    proxy_url = "https://t.me/proxy?server=proxy.example.com&port=443&secret=testsecret"
+    res = await http.patch(
+        "/api/admin/settings",
+        headers=auth,
+        json={
+            "changes": {
+                "BOT_USERNAME": "nasvyazi_test_bot",
+                "MTPROTO_PROXY_ENABLED": False,
+                "MTPROTO_PROXY_URL": proxy_url,
+                "LANDING_TELEGRAM_GATEWAY_ENABLED": True,
+            }
+        },
+    )
+    assert res.status_code == 200, res.text
+    res = await http.patch(
+        "/api/admin/miniapp",
+        headers=auth,
+        json={"ui": {"landing": {"enabled": True, "cta_target": "telegram"}}},
+    )
+    assert res.status_code == 200, res.text
+
+    public = (await http.get("/api/cabinet/public/landing")).json()
+    assert public["cta_target"] == "telegram"
+    assert public["telegram_gateway_url"] == "/telegram/"
+    assert public["mtproto_proxy_url"] == proxy_url
+    assert "Откройте кабинет в Telegram" in (await http.get("/telegram/")).text
+    assert (await http.get("/telegram/gateway.js")).status_code == 200
+
+    res = await http.patch(
+        "/api/admin/settings",
+        headers=auth,
+        json={"changes": {"LANDING_TELEGRAM_GATEWAY_ENABLED": False}},
+    )
+    assert res.status_code == 200, res.text
+    public = (await http.get("/api/cabinet/public/landing")).json()
+    assert public["cta_target"] == "bot"
+    assert public["telegram_gateway_url"] is None
+    assert public["mtproto_proxy_url"] is None
+
+
 # --- menu constructor -------------------------------------------------------------
 
 

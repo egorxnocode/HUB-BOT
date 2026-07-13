@@ -51,7 +51,7 @@ type UiLanding = {
   enabled?: boolean;
   headline?: string;
   subheadline?: string;
-  cta_target?: string; // web | bot
+  cta_target?: string; // web | bot | telegram
   features?: UiFeature[];
   faq?: UiFaq[];
 };
@@ -676,6 +676,7 @@ export default function Miniapp() {
                     >
                       <option value="web">{t.landingTargetWeb}</option>
                       <option value="bot">{t.landingTargetBot}</option>
+                      <option value="telegram">{t.landingTargetTelegram}</option>
                     </select>
                   </Field>
                   <Field label={t.landingHeadline}>

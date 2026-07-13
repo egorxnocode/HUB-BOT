@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Личный кабинет в Telegram</title>
+    <meta name="description" content="Подключите доступ к Telegram и откройте личный кабинет VPN." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Nunito:wght@600;700;800;900&family=JetBrains+Mono:wght@400;600;700&family=Unbounded:wght@600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../site.css" />
+    <link rel="stylesheet" href="gateway.css" />
+  </head>
+  <body data-variant="a" data-mode="light">
+    <header class="nav">
+      <div class="wrap nav-in">
+        <a class="brand" href="/"><span class="brand-mark">V</span><span id="brandName">VPN</span></a>
+        <div class="nav-actions">
+          <button id="themeToggle" class="icon-btn" title="Сменить тему" aria-label="Сменить тему">◐</button>
+          <a class="btn ghost sm" href="/">← На сайт</a>
+        </div>
+      </div>
+    </header>
+
+    <main class="gateway-main">
+      <section class="wrap gateway-wrap">
+        <div class="gateway-intro">
+          <span class="eyebrow">Доступ к личному кабинету</span>
+          <h1>Откройте кабинет в Telegram</h1>
+          <p>Если Telegram не открывается, сначала подключите прокси. Он действует только внутри Telegram и не меняет интернет на устройстве.</p>
+        </div>
+
+        <div id="gatewaySteps" class="gateway-steps" hidden>
+          <article id="proxyStep" class="card gateway-step">
+            <div class="step-number">1</div>
+            <div class="step-copy">
+              <h2>Подключите доступ к Telegram</h2>
+              <p>Telegram покажет окно подключения. Нажмите «Подключить». Если прокси вам не нужен, этот шаг можно пропустить.</p>
+              <div class="step-actions">
+                <a id="proxyButton" class="btn primary lg" href="#" target="_blank" rel="noopener">Подключить прокси</a>
+                <a id="proxyDirect" class="text-link" href="#" target="_blank" rel="noopener">Открыть прямо в приложении</a>
+              </div>
+            </div>
+          </article>
+
+          <div class="step-line" aria-hidden="true"></div>
+
+          <article id="botStep" class="card gateway-step">
+            <div class="step-number">2</div>
+            <div class="step-copy">
+              <h2>Откройте личный кабинет</h2>
+              <p>Вернитесь на эту страницу после подключения прокси и перейдите в бота.</p>
+              <a id="botButton" class="btn primary lg" href="#" target="_blank" rel="noopener">Открыть кабинет в Telegram</a>
+            </div>
+          </article>
+
+          <p class="skip-copy">Telegram уже работает? <a id="skipButton" class="text-link" href="#" target="_blank" rel="noopener">Сразу открыть бота</a></p>
+        </div>
+
+        <div id="gatewayError" class="card gateway-error" hidden>
+          <h2>Воронка пока не настроена</h2>
+          <p>Вернитесь на главную страницу или сообщите поддержке.</p>
+          <a class="btn ghost" href="/">Вернуться на сайт</a>
+        </div>
+      </section>
+    </main>
+
+    <script src="gateway.js"></script>
+  </body>
+</html>

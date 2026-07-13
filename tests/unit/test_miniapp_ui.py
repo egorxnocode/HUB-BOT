@@ -13,6 +13,7 @@ from src.web.routes.admin.miniapp import (
     _clean_landing,
     _clean_url,
 )
+from src.web.routes.cabinet import _public_proxy_link
 
 
 def test_clean_url_allows_safe_schemes_and_rejects_the_rest() -> None:
@@ -85,6 +86,20 @@ def test_clean_landing_normalizes_target_and_drops_empty() -> None:
 def test_clean_landing_bot_target_kept() -> None:
     out = _clean_landing({"cta_target": "bot"})
     assert out is not None and out["cta_target"] == "bot" and out["enabled"] is True
+
+
+def test_clean_landing_telegram_gateway_target_kept() -> None:
+    out = _clean_landing({"cta_target": "telegram"})
+    assert out is not None and out["cta_target"] == "telegram"
+
+
+def test_public_proxy_link_normalizes_and_rejects_unsafe_urls() -> None:
+    query = "server=proxy.example.com&port=443&secret=abcdef"
+    assert _public_proxy_link(f"tg://proxy?{query}") == f"https://t.me/proxy?{query}"
+    assert _public_proxy_link(f"t.me/proxy?{query}") == f"https://t.me/proxy?{query}"
+    assert _public_proxy_link(f"https://evil.example/proxy?{query}") is None
+    assert _public_proxy_link("https://t.me/proxy?server=x&port=99999&secret=y") is None
+    assert _public_proxy_link("javascript:alert(1)") is None
 
 
 def test_ui_shape_carries_landing() -> None:

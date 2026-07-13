@@ -1,6 +1,6 @@
 /* Public site runtime: fetches /api/cabinet/public/landing, paints one of 8 themes,
    renders tariffs/features/FAQ, and points every «Личный кабинет» / buy CTA at either
-   the web auth window (/web) or the Telegram bot — whatever the admin picked.
+   the web auth window (/web), the Telegram bot, or the proxy-to-bot gateway.
    ?variant= / ?mode= override the theme for the admin's live preview; falls back to a
    built-in demo when the API isn't reachable (standalone preview). */
 
@@ -46,7 +46,7 @@
 
   var DEMO = {
     enabled: true, template: "a", title: "VPN", accent_color: null, headline: "", subheadline: "",
-    features: [], faq: [], cta_target: "web", bot_username: "", cabinet_url: "/web/", currency: "RUB",
+    features: [], faq: [], cta_target: "web", bot_username: "", cabinet_url: "/web/", telegram_gateway_url: null, currency: "RUB",
     plans: [
       { name: "Старт", description: "Для одного устройства", durations: [{ months: 1, days: 30, price_minor: 19900 }, { months: 6, days: 180, price_minor: 99900 }, { months: 12, days: 365, price_minor: 179900 }] },
       { name: "Премиум", description: "5 устройств · для семьи", durations: [{ months: 1, days: 30, price_minor: 29900 }, { months: 6, days: 180, price_minor: 149900 }, { months: 12, days: 365, price_minor: 269900 }] },
@@ -80,6 +80,9 @@
   }
 
   function cabinetHref(cfg) {
+    if (cfg.cta_target === "telegram" && cfg.telegram_gateway_url) {
+      return cfg.telegram_gateway_url;
+    }
     if (cfg.cta_target === "bot" && cfg.bot_username) {
       return "https://t.me/" + String(cfg.bot_username).replace(/[^A-Za-z0-9_]/g, "");
     }

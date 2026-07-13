@@ -113,7 +113,7 @@ def _clean_buttons_extra(raw: Any) -> list[dict[str, Any]]:
 
 def _clean_landing(raw: Any) -> dict[str, Any] | None:
     """Public marketing site (served at /) content — hero copy, feature cards, FAQ,
-    and where the «Личный кабинет» CTA points (web auth window vs the Telegram bot)."""
+    and where the CTA points (web auth, Telegram bot, or the proxy-to-bot gateway)."""
     if not isinstance(raw, dict):
         return None
     features = []
@@ -141,11 +141,12 @@ def _clean_landing(raw: Any) -> dict[str, Any] | None:
         if not (question and answer):
             continue
         faq.append({"id": str(q.get("id") or f"q{i}")[:40], "q": question, "a": answer})
+    target = raw.get("cta_target")
     return {
         "enabled": bool(raw.get("enabled", True)),
         "headline": str(raw.get("headline") or "")[:120],
         "subheadline": str(raw.get("subheadline") or "")[:300],
-        "cta_target": "bot" if raw.get("cta_target") == "bot" else "web",
+        "cta_target": target if target in ("web", "bot", "telegram") else "web",
         "features": features,
         "faq": faq,
     }

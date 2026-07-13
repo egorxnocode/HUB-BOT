@@ -793,6 +793,16 @@ REGISTRY: tuple[ParamSpec, ...] = (
         "t.me/proxy?server=…&port=…&secret=… (или tg://proxy?…)",
         "t.me/proxy?server=…&port=…&secret=… (or tg://proxy?…)",
     ),
+    _p(
+        "LANDING_TELEGRAM_GATEWAY_ENABLED",
+        C.INTERFACE,
+        BOOL,
+        False,
+        "Telegram-воронка на сайте",
+        "Telegram funnel on website",
+        "Вести кнопки лендинга на два шага: подключить MTProto-прокси, затем открыть бота",
+        "Route landing CTAs through two steps: connect MTProto proxy, then open the bot",
+    ),
 )
 
 _BY_KEY: dict[str, ParamSpec] = {p.key: p for p in REGISTRY}
