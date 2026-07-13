@@ -230,7 +230,13 @@ class RemnawaveHttpClient:
         await self._action(panel_uuid, "enable")
 
     async def disable_user(self, panel_uuid: uuid.UUID) -> None:
-        await self._action(panel_uuid, "disable")
+        try:
+            await self._action(panel_uuid, "disable")
+        except RemnawaveError as exc:
+            # Remnawave returns HTTP 400/A029 for an already-disabled user. Disable is an
+            # idempotent command from our point of view (retries and admin reset must succeed).
+            if "A029" not in str(exc):
+                raise
 
     async def delete_user(self, panel_uuid: uuid.UUID) -> None:
         await self._request("DELETE", _PATHS["user"].format(uuid=panel_uuid))
@@ -245,7 +251,16 @@ class RemnawaveHttpClient:
         return _to_panel_user(dict(data))
 
     async def drop_connections(self, panel_uuid: uuid.UUID) -> None:
-        await self._action(panel_uuid, "drop-connections")
+        # Remnawave 2.8 exposes this under IP Control, not user actions. Target every
+        # connected node so disabling a subscription also evicts existing sessions.
+        await self._request(
+            "POST",
+            "/api/ip-control/drop-connections",
+            json={
+                "dropBy": {"by": "userUuids", "userUuids": [str(panel_uuid)]},
+                "targetNodes": {"target": "allNodes"},
+            },
+        )
 
     async def get_devices(self, panel_uuid: uuid.UUID) -> list[PanelDevice]:
         """HWID devices of one panel user (GET /api/hwid/devices/{uuid})."""

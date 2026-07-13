@@ -136,7 +136,9 @@ async def test_revoke_and_user_actions_hit_action_endpoints() -> None:
     enable = respx.post(f"{base}/enable").mock(return_value=httpx.Response(200))
     disable = respx.post(f"{base}/disable").mock(return_value=httpx.Response(200))
     reset = respx.post(f"{base}/reset-traffic").mock(return_value=httpx.Response(200))
-    drop = respx.post(f"{base}/drop-connections").mock(return_value=httpx.Response(200))
+    drop = respx.post(f"{BASE}/api/ip-control/drop-connections").mock(
+        return_value=httpx.Response(200, json={"response": {"eventSent": True}})
+    )
 
     client = _client()
     try:
@@ -149,7 +151,28 @@ async def test_revoke_and_user_actions_hit_action_endpoints() -> None:
         await client.aclose()
 
     assert revoke.called and enable.called and disable.called and reset.called and drop.called
+    assert json.loads(drop.calls.last.request.content) == {
+        "dropBy": {"by": "userUuids", "userUuids": [str(panel_uuid)]},
+        "targetNodes": {"target": "allNodes"},
+    }
     assert revoked.subscription_url is not None and revoked.subscription_url.endswith("?r=1")
+
+
+@respx.mock
+async def test_disable_user_treats_already_disabled_as_success() -> None:
+    panel_uuid = uuid.uuid4()
+    route = respx.post(f"{BASE}/api/users/{panel_uuid}/actions/disable").mock(
+        return_value=httpx.Response(
+            400,
+            json={"message": "User already disabled", "errorCode": "A029"},
+        )
+    )
+    client = _client()
+    try:
+        await client.disable_user(panel_uuid)
+    finally:
+        await client.aclose()
+    assert route.called
 
 
 async def test_renew_extends_expiry_and_updates_panel_on_mock() -> None:

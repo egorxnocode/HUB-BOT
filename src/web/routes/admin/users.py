@@ -17,6 +17,7 @@ from src.core.enums import (
     UserStatus,
 )
 from src.core.exceptions import DomainError, RemnawaveError
+from src.core.logging import get_logger
 from src.infrastructure.database.models.subscription import Subscription
 from src.infrastructure.database.models.transaction import Transaction
 from src.infrastructure.database.models.user import User
@@ -26,6 +27,7 @@ from src.web.routes.admin._common import OkOut, Page, audit, iso
 from src.web.routes.admin.deps import AdminIdentity, require_admin
 
 router = APIRouter(prefix="/users")
+log = get_logger(__name__)
 
 
 def _like_escape(q: str) -> str:
@@ -390,13 +392,24 @@ async def reset_subscription(
             raise HTTPException(400, "subscription missing")
 
         # Panel-first: never report a successful local reset while VPN access is still live.
-        # Repeating disable/drop is safe if a previous attempt only partially completed.
+        # Disabling is mandatory; dropping existing sessions is best-effort because older
+        # Remnawave/API tokens may not expose the IP-Control write scope. A disabled panel user
+        # cannot establish new sessions, so an optional drop failure must not roll local state
+        # back to ACTIVE (which would let resync re-enable the user).
         if sub.remnawave_uuid is not None:
             try:
                 await container.remnawave_client.disable_user(sub.remnawave_uuid)
-                await container.remnawave_client.drop_connections(sub.remnawave_uuid)
             except RemnawaveError as exc:
                 raise HTTPException(502, f"panel error: {exc}") from exc
+            try:
+                await container.remnawave_client.drop_connections(sub.remnawave_uuid)
+            except RemnawaveError as exc:
+                log.warning(
+                    "reset subscription: drop connections failed after disable",
+                    user_id=user_id,
+                    subscription_id=sub.id,
+                    error=str(exc),
+                )
 
         old_subscription_id = sub.id
         sub.status = SubscriptionStatus.DISABLED
