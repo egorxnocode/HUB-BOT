@@ -44,6 +44,7 @@ def test_menu_keyboard_groups_buttons_by_row_index() -> None:
             label="A",
             kind=MenuNodeKind.ACTION,
             payload="buy",
+            custom_emoji_id="5368324170671202286",
             is_active=True,
         ),
         MenuNode(
@@ -70,9 +71,18 @@ def test_menu_keyboard_groups_buttons_by_row_index() -> None:
     markup = menu_keyboard(nodes, None)
     assert [len(r) for r in markup.inline_keyboard] == [1, 2]  # row0: [A]; row1: [B, C]
     assert [b.text for b in markup.inline_keyboard[1]] == ["B", "C"]
+    assert markup.inline_keyboard[0][0].icon_custom_emoji_id == "5368324170671202286"
 
 
-def _node(id_: int, label: str, kind, payload, row: int = 0, order: int = 0):  # type: ignore[no-untyped-def]
+def _node(
+    id_: int,
+    label: str,
+    kind,
+    payload,
+    row: int = 0,
+    order: int = 0,
+    custom_emoji_id: str | None = None,
+):  # type: ignore[no-untyped-def]
     from src.infrastructure.database.models.menu_node import MenuNode
 
     return MenuNode(
@@ -83,6 +93,7 @@ def _node(id_: int, label: str, kind, payload, row: int = 0, order: int = 0):  #
         label=label,
         kind=kind,
         payload=payload,
+        custom_emoji_id=custom_emoji_id,
         is_active=True,
     )
 
@@ -92,7 +103,15 @@ def test_reply_menu_markup_bottom_bar_with_web_app_button() -> None:
     from src.core.enums import MenuNodeKind
 
     nodes = [
-        _node(1, "🛒 Купить", MenuNodeKind.ACTION, "buy", row=0, order=0),
+        _node(
+            1,
+            "🛒 Купить",
+            MenuNodeKind.ACTION,
+            "buy",
+            row=0,
+            order=0,
+            custom_emoji_id="5368324170671202286",
+        ),
         _node(2, "👤 Кабинет", MenuNodeKind.ACTION, "cabinet", row=0, order=1),
         _node(3, "📱 Приложение", MenuNodeKind.MINIAPP, None, row=1),
     ]
@@ -100,6 +119,7 @@ def test_reply_menu_markup_bottom_bar_with_web_app_button() -> None:
     assert kb is not None and kb.is_persistent and kb.resize_keyboard
     assert [len(r) for r in kb.keyboard] == [2, 1]  # row0: two actions; row1: app
     assert kb.keyboard[0][0].web_app is None  # action buttons are plain text (dispatched by label)
+    assert kb.keyboard[0][0].icon_custom_emoji_id == "5368324170671202286"
     app_btn = kb.keyboard[1][0]
     assert app_btn.web_app is not None and app_btn.web_app.url == "https://app.example"
 

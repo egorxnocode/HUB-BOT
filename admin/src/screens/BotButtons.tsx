@@ -17,7 +17,8 @@ type Node = {
   color: string | null;
   image_path: string | null;
   is_active: boolean;
-  order_index?: number;
+  order_index: number;
+  row_index: number;
 };
 
 const SWATCHES = ["", "#31A24C", "#2E63E7", "#E53935", "#F59E0B", "#7C5CFF", "#111111"];
@@ -73,7 +74,7 @@ export default function BotButtons() {
   const kids = (parent: string | null) =>
     nodes
       .filter((n) => n.parent === parent)
-      .sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0));
+      .sort((a, b) => a.row_index - b.row_index || a.order_index - b.order_index);
 
   function patchSel(patch: Partial<Node>) {
     if (!selId) return;
@@ -84,6 +85,7 @@ export default function BotButtons() {
     // Child of the selected screen (or of its parent when selected is not a screen).
     let parent: string | null = null;
     if (sel) parent = sel.kind === "screen" ? sel.id : sel.parent;
+    const siblings = kids(parent);
     const node: Node = {
       id: genId(),
       parent,
@@ -94,7 +96,8 @@ export default function BotButtons() {
       color: null,
       image_path: null,
       is_active: true,
-      order_index: kids(parent).length,
+      order_index: siblings.length,
+      row_index: siblings.length === 0 ? 0 : Math.max(...siblings.map((n) => n.row_index)) + 1,
     };
     setNodes((ns) => [...ns, node]);
     setSelId(node.id);
@@ -130,9 +133,9 @@ export default function BotButtons() {
     setNodes((ns) =>
       ns.map((n) =>
         n.id === a.id
-          ? { ...n, order_index: b.order_index ?? j }
+          ? { ...n, order_index: b.order_index, row_index: b.row_index }
           : n.id === b.id
-            ? { ...n, order_index: a.order_index ?? idx }
+            ? { ...n, order_index: a.order_index, row_index: a.row_index }
             : n,
       ),
     );
@@ -140,7 +143,17 @@ export default function BotButtons() {
 
   async function save() {
     try {
-      const payload = nodes.map((n) => ({
+      // The API rebuilds sibling order from request order, so send a stable tree traversal
+      // matching the constructor's visible row/order layout.
+      const ordered: Node[] = [];
+      const appendChildren = (parent: string | null) => {
+        for (const node of kids(parent)) {
+          ordered.push(node);
+          appendChildren(node.id);
+        }
+      };
+      appendChildren(null);
+      const payload = ordered.map((n) => ({
         id: n.id,
         parent: n.parent,
         label: n.label,
@@ -150,6 +163,7 @@ export default function BotButtons() {
         color: n.color,
         image_path: n.image_path,
         is_active: n.is_active,
+        row_index: n.row_index,
       }));
       const res = await api.put<{ nodes: Node[] }>("/api/admin/bot-menu", { nodes: payload });
       setNodes(res.nodes);
@@ -168,6 +182,12 @@ export default function BotButtons() {
   }, [sel]);
   const previewScreen = nodes.find((n) => n.id === previewScreenId) ?? null;
   const previewButtons = kids(previewScreenId);
+  const previewRows = previewButtons.reduce<Node[][]>((rows, button) => {
+    const last = rows.at(-1);
+    if (!last || last[0].row_index !== button.row_index) rows.push([button]);
+    else last.push(button);
+    return rows;
+  }, []);
 
   function TreeRow({ node, depth }: { node: Node; depth: number }) {
     const children = kids(node.id);
@@ -301,6 +321,19 @@ export default function BotButtons() {
                   }))}
                   onChange={(kind) => patchSel({ kind })}
                 />
+              </Field>
+              <Field label={t.buttonRow}>
+                <input
+                  className="input mono"
+                  type="number"
+                  min={1}
+                  step={1}
+                  value={sel.row_index + 1}
+                  onChange={(e) =>
+                    patchSel({ row_index: Math.max(0, Number.parseInt(e.target.value, 10) - 1 || 0) })
+                  }
+                />
+                <span className="dim">{t.buttonRowHint}</span>
               </Field>
               {sel.kind === "screen" && (
                 <Field label={t.screenText}>
@@ -448,23 +481,40 @@ export default function BotButtons() {
               </div>
             </div>
             <div className="grid" style={{ gap: 6 }}>
-              {previewButtons.map((b) => (
-                <button
-                  key={b.id}
-                  onClick={() => setSelId(b.id)}
+              {previewRows.map((row) => (
+                <div
+                  key={`row-${row[0].row_index}`}
                   style={{
-                    borderRadius: 6,
-                    border:
-                      b.id === selId ? "1px solid var(--text)" : "1px solid var(--border2)",
-                    background: b.color || "var(--panel)",
-                    color: b.color ? "#fff" : "var(--text)",
-                    padding: "9px 12px",
-                    fontSize: 13,
-                    cursor: "pointer",
+                    display: "grid",
+                    gridTemplateColumns: `repeat(${row.length}, minmax(0, 1fr))`,
+                    gap: 6,
                   }}
                 >
-                  {b.label}
-                </button>
+                  {row.map((b) => (
+                    <button
+                      key={b.id}
+                      onClick={() => setSelId(b.id)}
+                      style={{
+                        minWidth: 0,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "nowrap",
+                        borderRadius: 6,
+                        border:
+                          b.id === selId
+                            ? "1px solid var(--text)"
+                            : "1px solid var(--border2)",
+                        background: b.color || "var(--panel)",
+                        color: b.color ? "#fff" : "var(--text)",
+                        padding: "9px 12px",
+                        fontSize: 13,
+                        cursor: "pointer",
+                      }}
+                    >
+                      {b.label}
+                    </button>
+                  ))}
+                </div>
               ))}
               {previewButtons.length === 0 && <span className="dim">—</span>}
             </div>

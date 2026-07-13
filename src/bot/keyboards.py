@@ -35,6 +35,8 @@ def _button(
     node: MenuNode, miniapp_url: str | None, default_color: str | None = None
 ) -> InlineKeyboardButton:
     kwargs: dict[str, object] = {"text": node.label}
+    if node.custom_emoji_id:
+        kwargs["icon_custom_emoji_id"] = node.custom_emoji_id
     style = style_for_hex(node.color or default_color)
     if style:
         kwargs["style"] = style
@@ -134,12 +136,16 @@ def reply_menu_markup(
     for n in siblings:
         if n.kind.value == "back":
             continue
+        button_kwargs: dict[str, object] = {"text": n.label}
+        if n.custom_emoji_id:
+            button_kwargs["icon_custom_emoji_id"] = n.custom_emoji_id
         if n.kind.value == "miniapp":
             if not has_app:
                 continue
-            button = KeyboardButton(text=n.label, web_app=WebAppInfo(url=miniapp_url or ""))
+            button_kwargs["web_app"] = WebAppInfo(url=miniapp_url or "")
+            button = KeyboardButton(**button_kwargs)  # type: ignore[arg-type]
         else:
-            button = KeyboardButton(text=n.label)
+            button = KeyboardButton(**button_kwargs)  # type: ignore[arg-type]
         if not rows or n.row_index != current:
             rows.append([])
             current = n.row_index

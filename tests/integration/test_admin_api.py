@@ -256,8 +256,15 @@ async def test_menu_save_and_cycle_guard(
     http, _ = client
     auth = await _login(http)
     nodes = [
-        {"id": "root1", "label": "Купить", "kind": "action", "payload": "buy"},
-        {"id": "scr", "label": "Инфо", "kind": "screen", "payload": "Текст"},
+        {
+            "id": "root1",
+            "label": "Купить",
+            "kind": "action",
+            "payload": "buy",
+            "row_index": 0,
+            "custom_emoji_id": "5368324170671202286",
+        },
+        {"id": "scr", "label": "Инфо", "kind": "screen", "payload": "Текст", "row_index": 1},
         {"id": "child", "parent": "scr", "label": "FAQ", "kind": "link", "payload": "https://x"},
     ]
     res = await http.put("/api/admin/bot-menu", headers=auth, json={"nodes": nodes})
@@ -266,7 +273,10 @@ async def test_menu_save_and_cycle_guard(
     assert len(saved) == 3
     child = next(n for n in saved if n["label"] == "FAQ")
     parent = next(n for n in saved if n["label"] == "Инфо")
+    root = next(n for n in saved if n["label"] == "Купить")
     assert child["parent"] == parent["id"]
+    assert [root["row_index"], parent["row_index"]] == [0, 1]
+    assert root["custom_emoji_id"] == "5368324170671202286"
 
     # cycle: a->b->a
     bad = [
