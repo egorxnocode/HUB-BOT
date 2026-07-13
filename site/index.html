@@ -6,7 +6,7 @@
     <meta name="theme-color" content="#f5f6f1" />
     <title>На связи — интернет без границ</title>
     <meta name="description" content="Привычный интернет на телефоне, компьютере и телевизоре. Подключение за две минуты." />
-    <link rel="stylesheet" href="site.css?v=brand-v1" />
+    <link rel="stylesheet" href="site.css?v=brand-v2" />
   </head>
   <body data-mode="light">
     <svg class="svg-sprite" aria-hidden="true">
@@ -79,9 +79,31 @@
           <h2>Три шага — и вы на связи</h2>
         </div>
         <div class="steps">
-          <article><span>01</span><h3>Выберите тариф</h3><p>На день, месяц или сразу для всей семьи.</p></article>
-          <article><span>02</span><h3>Оплатите</h3><p>Картой, СБП или другим удобным способом.</p></article>
-          <article><span>03</span><h3>Подключитесь</h3><p>Приложение и понятная инструкция появятся сразу.</p></article>
+          <article class="step-card">
+            <div class="step-visual step-visual-plan" aria-hidden="true">
+              <span class="step-number">01</span>
+              <div class="step-plan-pills"><i>1 месяц</i><i class="active">3 месяца</i><i>1 год</i></div>
+              <div class="step-plan-total"><small>Ваша подписка</small><strong>749 ₽</strong></div>
+            </div>
+            <div class="step-copy"><span>Сначала</span><h3>Выберите тариф</h3><p>Подберите срок и количество устройств под себя.</p></div>
+          </article>
+          <article class="step-card">
+            <div class="step-visual step-visual-pay" aria-hidden="true">
+              <span class="step-number">02</span>
+              <div class="step-payment-card"><small>К оплате</small><strong>749 ₽</strong><span><i></i>Безопасная оплата</span></div>
+              <div class="step-payment-methods"><b>СБП</b><b>Карта</b></div>
+            </div>
+            <div class="step-copy"><span>Затем</span><h3>Оплатите</h3><p>Выберите удобный способ — всё займёт меньше минуты.</p></div>
+          </article>
+          <article class="step-card">
+            <div class="step-visual step-visual-connect" aria-hidden="true">
+              <span class="step-number">03</span>
+              <div class="step-device step-device-phone"><i></i><span>Телефон</span></div>
+              <div class="step-device step-device-laptop"><i></i><span>Компьютер</span></div>
+              <div class="step-connected"><i></i>Готово</div>
+            </div>
+            <div class="step-copy"><span>Готово</span><h3>Подключитесь</h3><p>Получите приложение и короткую инструкцию для устройства.</p></div>
+          </article>
         </div>
       </section>
 
@@ -146,6 +168,6 @@
       </div>
     </footer>
 
-    <script src="site.js?v=brand-v1"></script>
+    <script src="site.js?v=brand-v2"></script>
   </body>
 </html>

@@ -165,11 +165,42 @@ button, input, select, textarea { font: inherit; }
 .section-head-left { margin-inline: 0; text-align: left; }
 .section-head h2 { margin: 10px 0 8px; font-size: clamp(31px, 4vw, 48px); line-height: 1.08; letter-spacing: -.045em; }
 .section-head p { margin: 0; color: var(--muted); }
-.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 34px; }
-.steps article { padding-top: 18px; border-top: 1px solid var(--line); }
-.steps article > span { color: var(--brand-deep); font-size: 13px; font-weight: 800; }
-.steps h3 { margin: 17px 0 8px; font-size: 21px; }
-.steps p { margin: 0; color: var(--muted); }
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; counter-reset: steps; }
+.step-card { overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); }
+.step-visual { position: relative; height: 210px; overflow: hidden; padding: 24px; background: color-mix(in srgb, var(--brand) 9%, var(--surface-soft)); }
+.step-number { position: absolute; top: 16px; left: 18px; z-index: 2; color: color-mix(in srgb, var(--brand-deep) 74%, var(--ink)); font-size: 42px; font-weight: 820; line-height: 1; letter-spacing: -.07em; }
+.step-copy { padding: 25px 25px 28px; }
+.step-copy > span { color: var(--brand-deep); font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.step-copy h3 { margin: 7px 0 8px; font-size: 22px; letter-spacing: -.025em; }
+.step-copy p { margin: 0; color: var(--muted); font-size: 14px; }
+
+.step-plan-pills { position: absolute; top: 78px; left: 18px; right: 18px; display: flex; gap: 6px; }
+.step-plan-pills i { flex: 1; padding: 8px 5px; border: 1px solid var(--line); border-radius: 9px; background: var(--surface); color: var(--muted); font-size: 10px; font-style: normal; text-align: center; }
+.step-plan-pills i.active { border-color: var(--brand); background: var(--brand); color: var(--brand-ink); font-weight: 800; }
+.step-plan-total { position: absolute; left: 18px; right: 18px; bottom: 20px; display: flex; align-items: end; justify-content: space-between; }
+.step-plan-total small { color: var(--muted); font-size: 11px; }
+.step-plan-total strong { font-size: 25px; letter-spacing: -.04em; }
+
+.step-visual-pay { background: color-mix(in srgb, var(--sky) 12%, var(--surface-soft)); }
+.step-payment-card { position: absolute; top: 60px; left: 52px; right: 22px; bottom: 26px; padding: 20px; display: grid; align-content: start; border-radius: 17px; background: var(--brand-ink); color: #ffffff; box-shadow: 0 16px 35px rgba(7, 42, 35, .2); transform: rotate(-2deg); }
+.step-payment-card small { opacity: .65; font-size: 10px; }
+.step-payment-card strong { margin-top: 2px; font-size: 25px; letter-spacing: -.04em; }
+.step-payment-card span { margin-top: auto; display: flex; align-items: center; gap: 6px; opacity: .78; font-size: 9px; }
+.step-payment-card span i, .step-connected i { width: 7px; height: 7px; border-radius: 50%; background: var(--brand); }
+.step-payment-methods { position: absolute; right: 12px; bottom: 13px; display: flex; gap: 5px; transform: rotate(2deg); }
+.step-payment-methods b { padding: 6px 8px; border: 1px solid color-mix(in srgb, #ffffff 70%, transparent); border-radius: 8px; background: var(--surface); color: var(--ink); font-size: 9px; box-shadow: 0 6px 16px rgba(7, 42, 35, .09); }
+
+.step-visual-connect { background: color-mix(in srgb, var(--warm) 13%, var(--surface-soft)); }
+.step-device { position: absolute; display: grid; place-items: center; gap: 7px; color: var(--muted); font-size: 10px; }
+.step-device i { position: relative; display: block; border: 2px solid color-mix(in srgb, var(--ink) 70%, transparent); background: var(--surface); box-shadow: 0 12px 25px rgba(20, 45, 38, .1); }
+.step-device-phone { left: 50px; bottom: 35px; }
+.step-device-phone i { width: 47px; height: 82px; border-radius: 11px; }
+.step-device-phone i::after { content: ""; position: absolute; left: 16px; right: 16px; bottom: 6px; height: 3px; border-radius: 9px; background: var(--line); }
+.step-device-laptop { right: 28px; bottom: 36px; }
+.step-device-laptop i { width: 94px; height: 61px; border-radius: 8px 8px 4px 4px; }
+.step-device-laptop i::after { content: ""; position: absolute; left: -8px; right: -8px; bottom: -7px; height: 6px; border-radius: 0 0 7px 7px; background: color-mix(in srgb, var(--ink) 70%, transparent); }
+.step-device i::before { content: ""; position: absolute; inset: 9px; border-radius: 5px; background: linear-gradient(145deg, color-mix(in srgb, var(--brand) 70%, #ffffff), var(--sky)); }
+.step-connected { position: absolute; top: 67px; right: 24px; padding: 7px 10px; display: flex; align-items: center; gap: 6px; border-radius: 999px; background: var(--surface); color: var(--ink); font-size: 10px; font-weight: 800; box-shadow: 0 8px 24px rgba(20, 45, 38, .11); }
 
 .plans-section { background: var(--surface-soft); }
 .plan-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(245px, 1fr)); gap: 14px; align-items: stretch; }
@@ -243,7 +274,10 @@ button, input, select, textarea { font: inherit; }
   .poster-brand { inset: 24px auto auto 24px; }
   .poster-brand span { font-size: 22px; }
   .app-preview { right: 14px; width: min(315px, 84%); }
-  .steps { grid-template-columns: 1fr; gap: 22px; }
+  .steps { grid-template-columns: 1fr; gap: 14px; }
+  .step-card { display: grid; grid-template-columns: minmax(220px, .9fr) 1.1fr; }
+  .step-visual { height: 190px; }
+  .step-copy { align-self: center; }
   .section { padding-block: 64px; }
   .section-head { text-align: left; margin-left: 0; }
   .plan-grid, .feature-grid { grid-template-columns: 1fr; }
@@ -265,6 +299,8 @@ button, input, select, textarea { font: inherit; }
   .preview-days { padding-block: 18px; }
   .preview-days b { font-size: 36px; }
   .proof-list { display: grid; }
+  .step-card { display: block; }
+  .step-visual { height: 200px; }
   .duration-button { align-items: flex-start; flex-direction: column; }
   .final-banner { border-radius: 22px; }
   .footer-links { gap: 14px; flex-wrap: wrap; }
