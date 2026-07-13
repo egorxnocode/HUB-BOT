@@ -1,133 +1,171 @@
-/* Public site runtime: fetches /api/cabinet/public/landing, paints one of 8 themes,
-   renders tariffs/features/FAQ, and points every «Личный кабинет» / buy CTA at either
-   the web auth window (/web), the Telegram bot, or the proxy-to-bot gateway.
-   ?variant= / ?mode= override the theme for the admin's live preview; falls back to a
-   built-in demo when the API isn't reachable (standalone preview). */
+/* Public NaSvyazi landing: one brand system, dynamic plans/content, and a safe
+   route to the web cabinet, Telegram bot, or the proxy-to-bot gateway. */
 
 (function () {
   "use strict";
 
   var params = new URLSearchParams(location.search);
-  var NAMES = { minimal: "a", private: "b", buddy: "c", native: "d", terminal: "e", magazine: "f", neon: "g", pop: "h" };
-
-  var RU = {
-    navPlans: "Тарифы", navFeatures: "Возможности", navFaq: "Вопросы", cabinet: "Личный кабинет",
-    buy: "Купить подписку", statusOn: "Защита включена", daysShort: "дней", speed: "Скорость",
-    plansTitle: "Тарифы", plansSub: "Оплата картой, СБП, криптой или Telegram Stars",
-    featuresTitle: "Почему мы", faqTitle: "Частые вопросы", ctaBand: "Готовы подключиться?",
-    choose: "Выбрать", month: "мес", perMonth: "/мес", from: "от", eyebrow: "Быстрый VPN без границ",
-    heroTitle: "Свобода в сети — за одну минуту", trust1: "Без логов", trust2: "До 10 устройств", trust3: "Серверы по миру",
-    heroSub: "Высокая скорость, стабильное соединение и простое подключение. Оформи подписку и подключись за пару кликов.",
+  var DEFAULTS = {
+    eyebrow: "VPN без сложных настроек",
+    headline: "Интернет работает.\nГде бы вы ни были.",
+    subheadline: "Открывайте привычные сайты и приложения на телефоне, компьютере и телевизоре. Подключение занимает две минуты.",
+    trust: ["Телефон, компьютер и ТВ", "Понятное подключение", "Поддержка в Telegram"],
   };
-  var EN = {
-    navPlans: "Plans", navFeatures: "Features", navFaq: "FAQ", cabinet: "Account",
-    buy: "Get a plan", statusOn: "Protected", daysShort: "days", speed: "Speed",
-    plansTitle: "Plans", plansSub: "Pay by card, SBP, crypto or Telegram Stars",
-    featuresTitle: "Why us", faqTitle: "FAQ", ctaBand: "Ready to connect?",
-    choose: "Choose", month: "mo", perMonth: "/mo", from: "from", eyebrow: "Fast VPN, no borders",
-    heroTitle: "Online freedom in one minute", trust1: "No logs", trust2: "Up to 10 devices", trust3: "Servers worldwide",
-    heroSub: "High speed, a stable connection and easy setup. Grab a plan and connect in a couple of clicks.",
-  };
-  var T = (params.get("lang") || (navigator.language || "ru").slice(0, 2)) === "en" ? EN : RU;
-
   var DEFAULT_FEATURES = [
-    { icon: "⚡", title: RU === T ? "Максимальная скорость" : "Top speed", text: RU === T ? "Смотри видео в 4K и качай без лимитов" : "Stream 4K and download with no limits" },
-    { icon: "🔒", title: RU === T ? "Никаких логов" : "No logs", text: RU === T ? "Мы не храним историю и не следим за тобой" : "We keep no history and never track you" },
-    { icon: "📱", title: RU === T ? "Все устройства" : "Any device", text: RU === T ? "iOS, Android, Windows, macOS — до 10 сразу" : "iOS, Android, Windows, macOS — up to 10" },
-    { icon: "🌍", title: RU === T ? "Серверы по миру" : "Global servers", text: RU === T ? "Десятки локаций, минимальный пинг" : "Dozens of locations, low ping" },
-    { icon: "🛡", title: RU === T ? "Обход блокировок" : "Bypass blocks", text: RU === T ? "Современный протокол, незаметный для фильтров" : "A modern, filter-resistant protocol" },
-    { icon: "💬", title: RU === T ? "Поддержка 24/7" : "24/7 support", text: RU === T ? "Ответим в Telegram в любое время" : "We answer in Telegram anytime" },
+    { icon: "devices", title: "Все устройства", text: "Телефон, компьютер, планшет и телевизор — в одной подписке." },
+    { icon: "route", title: "Подключение по шагам", text: "Покажем нужное приложение и короткую инструкцию для вашего устройства." },
+    { icon: "support", title: "Поддержка рядом", text: "Если что-то не получается, ответим в Telegram и поможем подключиться." },
   ];
   var DEFAULT_FAQ = [
-    { q: RU === T ? "Как начать?" : "How do I start?", a: RU === T ? "Нажми «Личный кабинет», оформи подписку и подключись по инструкции — займёт минуту." : "Tap Account, pick a plan and follow the setup — it takes a minute." },
-    { q: RU === T ? "На скольких устройствах работает?" : "How many devices?", a: RU === T ? "Зависит от тарифа — до 10 устройств одновременно." : "Depends on the plan — up to 10 devices at once." },
-    { q: RU === T ? "Какие способы оплаты?" : "Payment methods?", a: RU === T ? "Карта, СБП, криптовалюта и Telegram Stars." : "Card, SBP, crypto and Telegram Stars." },
+    { q: "Как начать?", a: "Выберите тариф, оплатите подписку и следуйте инструкции для своего устройства. Обычно это занимает пару минут." },
+    { q: "На скольких устройствах работает?", a: "Количество устройств зависит от тарифа. Точный лимит всегда указан перед оплатой." },
+    { q: "Какие способы оплаты доступны?", a: "Доступные способы оплаты появятся при оформлении заказа." },
   ];
-
   var DEMO = {
-    enabled: true, template: "a", title: "VPN", accent_color: null, headline: "", subheadline: "",
-    features: [], faq: [], cta_target: "web", bot_username: "", cabinet_url: "/web/", telegram_gateway_url: null, currency: "RUB",
+    enabled: true,
+    title: "На связи",
+    accent_color: null,
+    headline: "",
+    subheadline: "",
+    greeting: "",
+    features: [],
+    faq: [],
+    cta_target: "web",
+    bot_username: "",
+    cabinet_url: "/web/",
+    telegram_gateway_url: null,
     plans: [
-      { name: "Старт", description: "Для одного устройства", durations: [{ months: 1, days: 30, price_minor: 19900 }, { months: 6, days: 180, price_minor: 99900 }, { months: 12, days: 365, price_minor: 179900 }] },
-      { name: "Премиум", description: "5 устройств · для семьи", durations: [{ months: 1, days: 30, price_minor: 29900 }, { months: 6, days: 180, price_minor: 149900 }, { months: 12, days: 365, price_minor: 269900 }] },
+      { name: "На день", description: "Попробовать или взять в поездку", durations: [{ days: 1, months: 0, price_minor: 2900 }] },
+      { name: "Стандартный", description: "Для телефона и компьютера", durations: [{ days: 30, months: 1, price_minor: 27900 }, { days: 90, months: 3, price_minor: 74900 }] },
+      { name: "Семейный", description: "До пяти устройств одновременно", durations: [{ days: 30, months: 1, price_minor: 34900 }, { days: 90, months: 3, price_minor: 99900 }] },
     ],
   };
 
-  var $ = function (s) { return document.querySelector(s); };
-  function el(tag, attrs, kids) {
-    var n = document.createElement(tag);
-    if (attrs) for (var k in attrs) {
-      if (k === "class") n.className = attrs[k];
-      else if (k === "text") n.textContent = attrs[k];
-      else if (k === "html") n.innerHTML = attrs[k];
-      else if (k.slice(0, 2) === "on") n.addEventListener(k.slice(2), attrs[k]);
-      else if (attrs[k] != null) n.setAttribute(k, attrs[k]);
-    }
-    (kids || []).forEach(function (c) { if (c != null) n.append(c.nodeType ? c : String(c)); });
-    return n;
-  }
-  function money(minor) {
-    var v = minor / 100;
-    return (v % 1 ? v.toFixed(2) : v.toFixed(0)).replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " ₽";
+  var $ = function (selector) { return document.querySelector(selector); };
+
+  function el(tag, attrs, children) {
+    var node = document.createElement(tag);
+    Object.keys(attrs || {}).forEach(function (key) {
+      if (key === "class") node.className = attrs[key];
+      else if (key === "text") node.textContent = attrs[key];
+      else if (key.slice(0, 2) === "on") node.addEventListener(key.slice(2), attrs[key]);
+      else if (attrs[key] != null) node.setAttribute(key, attrs[key]);
+    });
+    (children || []).forEach(function (child) {
+      if (child != null) node.append(child.nodeType ? child : String(child));
+    });
+    return node;
   }
 
-  function applyI18n() {
-    document.querySelectorAll("[data-i18n]").forEach(function (n) {
-      var v = T[n.getAttribute("data-i18n")];
-      if (v) n.textContent = v;
-    });
-    document.documentElement.lang = T === EN ? "en" : "ru";
+  function money(minor) {
+    var value = Number(minor || 0) / 100;
+    return new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 2 }).format(value) + " ₽";
+  }
+
+  function plural(value, forms) {
+    var n = Math.abs(value) % 100;
+    var n1 = n % 10;
+    if (n > 10 && n < 20) return forms[2];
+    if (n1 > 1 && n1 < 5) return forms[1];
+    if (n1 === 1) return forms[0];
+    return forms[2];
+  }
+
+  function durationMonths(duration) {
+    if (Number(duration.months || 0) > 0) return Number(duration.months);
+    return Math.max(1, Math.round(Number(duration.days || 30) / 30));
+  }
+
+  function periodLabel(duration) {
+    var days = Number(duration.days || 0);
+    var months = durationMonths(duration);
+    if (days > 0 && days < 28) return days + " " + plural(days, ["день", "дня", "дней"]);
+    return months + " " + plural(months, ["месяц", "месяца", "месяцев"]);
+  }
+
+  function directBotUrl(username) {
+    var clean = String(username || "").replace(/[^A-Za-z0-9_]/g, "");
+    return clean ? "tg://resolve?domain=" + encodeURIComponent(clean) + "&start=website" : null;
   }
 
   function cabinetHref(cfg) {
-    if (cfg.cta_target === "telegram" && cfg.telegram_gateway_url) {
-      return cfg.telegram_gateway_url;
-    }
-    if (cfg.cta_target === "bot" && cfg.bot_username) {
-      return "https://t.me/" + String(cfg.bot_username).replace(/[^A-Za-z0-9_]/g, "");
-    }
-    var u = cfg.cabinet_url || "/web/";
-    // Only http(s)/relative targets — never let a tampered config yield javascript:/data:.
-    return /^(https?:\/\/|\/)/i.test(u) ? u : "/web/";
+    if (cfg.cta_target === "telegram" && cfg.telegram_gateway_url) return cfg.telegram_gateway_url;
+    if (cfg.cta_target === "bot" && cfg.bot_username) return directBotUrl(cfg.bot_username) || "/telegram/";
+    var url = cfg.cabinet_url || "/web/";
+    return /^(https?:\/\/|\/)/i.test(url) ? url : "/web/";
   }
-  function openCabinet(href) {
-    return function (e) { if (e) e.preventDefault(); window.open(href, href.charAt(0) === "/" ? "_self" : "_blank"); };
+
+  function linkTarget(href) {
+    return /^https?:\/\//i.test(href) ? "_blank" : "_self";
+  }
+
+  function iconNode(raw) {
+    var aliases = { "⚡": "route", "🔒": "shield", "📱": "devices", "🌍": "globe", "🛡": "shield", "💬": "support" };
+    var kind = aliases[raw] || raw || "route";
+    var paths = {
+      devices: ["M7 3h10a2 2 0 0 1 2 2v14H5V5a2 2 0 0 1 2-2Z", "M9 17h6"],
+      route: ["M5 7h8a3 3 0 0 1 0 6H9a3 3 0 0 0 0 6h10", "m16 4 3 3-3 3"],
+      support: ["M4 13a8 8 0 0 1 16 0", "M4 13v4a2 2 0 0 0 2 2h2v-7H4", "M20 13v4a2 2 0 0 1-2 2h-2"],
+      shield: ["M12 3 5 6v5c0 4.5 2.8 7.8 7 10 4.2-2.2 7-5.5 7-10V6l-7-3Z", "m9 13 2 2 4-5"],
+      globe: ["M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Z", "M3 12h18", "M12 3a14 14 0 0 1 0 18", "M12 3a14 14 0 0 0 0 18"],
+    };
+    if (!paths[kind]) return el("span", { text: String(raw || "•").slice(0, 2) });
+    var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("fill", "none");
+    svg.setAttribute("stroke", "currentColor");
+    svg.setAttribute("stroke-width", "1.8");
+    svg.setAttribute("stroke-linecap", "round");
+    svg.setAttribute("stroke-linejoin", "round");
+    paths[kind].forEach(function (d) {
+      var path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("d", d);
+      svg.append(path);
+    });
+    return svg;
   }
 
   function renderPlans(cfg) {
     var grid = $("#planGrid");
-    grid.innerHTML = "";
     var href = cabinetHref(cfg);
-    (cfg.plans || []).forEach(function (p, idx) {
-      var durs = p.durations || [];
-      var state = { sel: durs.length > 1 ? 1 : 0 };
-      var priceB = el("b", {});
-      var perSpan = el("span", { class: "per" });
-      var durRow = el("div", { class: "durs" }, durs.map(function (d, i) {
-        return el("div", {
-          class: "dur" + (i === state.sel ? " on" : ""),
-          onclick: function () { state.sel = i; paint(); },
-        }, [
-          el("div", { text: (d.months || Math.round(d.days / 30)) + " " + T.month }),
-          el("span", { class: "p", text: money(d.price_minor) }),
-        ]);
-      }));
+    grid.innerHTML = "";
+    (cfg.plans || []).forEach(function (plan, index) {
+      var durations = plan.durations || [];
+      var suggested = durations.findIndex(function (item) { return Number(item.days || 0) >= 80 && Number(item.days || 0) <= 100; });
+      var state = { selected: suggested >= 0 ? suggested : Math.min(1, Math.max(0, durations.length - 1)) };
+      var total = el("strong", {});
+      var period = el("span", {});
+      var monthly = el("small", {});
+      var durationList = el("div", { class: "duration-list" });
+
       function paint() {
-        var d = durs[state.sel] || durs[0] || { price_minor: 0, months: 1, days: 30 };
-        var months = d.months || Math.round(d.days / 30) || 1;
-        // marketing «per month» — round to whole rubles so it reads «от 167 ₽/мес»
-        priceB.textContent = money(Math.round(d.price_minor / months / 100) * 100);
-        perSpan.textContent = T.perMonth;
-        [].forEach.call(durRow.children, function (c, i) { c.classList.toggle("on", i === state.sel); });
+        var selected = durations[state.selected] || durations[0] || { days: 30, months: 1, price_minor: 0 };
+        var months = durationMonths(selected);
+        total.textContent = money(selected.price_minor);
+        period.textContent = "за " + periodLabel(selected);
+        monthly.textContent = months > 1 ? money(Math.round(Number(selected.price_minor || 0) / months / 100) * 100) + " в месяц" : "";
+        Array.prototype.forEach.call(durationList.children, function (button, buttonIndex) {
+          button.classList.toggle("active", buttonIndex === state.selected);
+          button.setAttribute("aria-pressed", buttonIndex === state.selected ? "true" : "false");
+        });
       }
-      var card = el("div", { class: "card plan" + (idx === 1 ? " feat" : "") }, [
-        idx === 1 ? el("span", { class: "badge", text: "★ HIT" }) : null,
-        el("h3", { text: p.name }),
-        el("div", { class: "desc", text: p.description || "" }),
-        el("div", { class: "price" }, [priceB, perSpan]),
-        durs.length > 1 ? durRow : null,
-        el("div", { class: "spacer" }),
-        el("a", { class: "btn primary", href: href, target: href.charAt(0) === "/" ? "_self" : "_blank", text: T.choose }),
+
+      durations.forEach(function (duration, durationIndex) {
+        durationList.append(el("button", {
+          class: "duration-button",
+          type: "button",
+          "aria-pressed": durationIndex === state.selected ? "true" : "false",
+          onclick: function () { state.selected = durationIndex; paint(); },
+        }, [el("span", { text: periodLabel(duration) }), el("strong", { text: money(duration.price_minor) })]));
+      });
+
+      var card = el("article", { class: "plan-card" + (index === 1 ? " recommended" : "") }, [
+        index === 1 ? el("span", { class: "plan-badge", text: "Популярный" }) : null,
+        el("h3", { text: plan.name || "Тариф" }),
+        el("div", { class: "plan-description", text: plan.description || "" }),
+        el("div", { class: "plan-price" }, [total, period, monthly]),
+        durations.length > 1 ? durationList : null,
+        el("a", { class: "button " + (index === 1 ? "button-primary" : "button-soft"), href: href, target: linkTarget(href), text: index === 1 ? "Подключиться" : "Выбрать" }),
       ]);
       paint();
       grid.append(card);
@@ -136,95 +174,82 @@
 
   function renderFeatures(cfg) {
     var grid = $("#featureGrid");
+    var items = cfg.features && cfg.features.length ? cfg.features : DEFAULT_FEATURES;
     grid.innerHTML = "";
-    var items = (cfg.features && cfg.features.length) ? cfg.features : DEFAULT_FEATURES;
-    items.forEach(function (f) {
-      grid.append(el("div", { class: "card feat-card" }, [
-        el("span", { class: "feat-ico", text: f.icon || "•" }),
-        el("h3", { text: f.title || "" }),
-        el("p", { text: f.text || "" }),
+    items.forEach(function (feature) {
+      grid.append(el("article", { class: "feature-item" }, [
+        el("span", { class: "feature-icon" }, [iconNode(feature.icon)]),
+        el("div", {}, [el("h3", { text: feature.title || "" }), el("p", { text: feature.text || "" })]),
       ]));
     });
   }
 
   function renderFaq(cfg) {
     var list = $("#faqList");
+    var items = cfg.faq && cfg.faq.length ? cfg.faq : DEFAULT_FAQ;
     list.innerHTML = "";
-    var items = (cfg.faq && cfg.faq.length) ? cfg.faq : DEFAULT_FAQ;
-    items.forEach(function (f) {
-      var item = el("div", { class: "card faq-item" }, [
-        el("button", { class: "faq-q", text: f.q || "", onclick: function () { item.classList.toggle("open"); } }),
-        el("div", { class: "faq-a", text: f.a || "" }),
+    items.forEach(function (faq) {
+      var answer = el("div", { class: "faq-answer", text: faq.a || "" });
+      var item = el("article", { class: "faq-item" }, [
+        el("button", { class: "faq-question", type: "button", "aria-expanded": "false", text: faq.q || "", onclick: function (event) {
+          var open = item.classList.toggle("open");
+          event.currentTarget.setAttribute("aria-expanded", open ? "true" : "false");
+        } }),
+        answer,
       ]);
       list.append(item);
     });
   }
 
-  function theme(cfg) {
-    var v = params.get("variant") || cfg.template || "a";
-    v = NAMES[v] || v;
-    document.body.dataset.variant = /^[a-h]$/.test(v) ? v : "a";
-    var accent = params.get("accent") || (!params.get("variant") ? cfg.accent_color : null);
-    if (accent && /^#[0-9a-fA-F]{3,8}$/.test(accent)) {
-      document.body.style.setProperty("--acc", accent);
-      document.querySelector(".brand-mark") && (document.querySelector(".brand-mark").style.background = accent);
-    }
+  function applyTheme(cfg) {
     var stored = null;
-    try { stored = localStorage.getItem("site_mode"); } catch (e) {}
-    // ?mode= (admin preview) wins, then the visitor's saved choice, then the OS preference.
-    var mode = params.get("mode") || stored || (window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    try { stored = localStorage.getItem("site_mode"); } catch (error) {}
+    var preferred = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    var mode = params.get("mode") || stored || preferred;
     document.body.dataset.mode = mode === "dark" ? "dark" : "light";
+    var accent = params.get("accent") || cfg.accent_color;
+    if (accent && /^#[0-9a-fA-F]{6}$/.test(accent)) document.documentElement.style.setProperty("--brand", accent);
   }
 
   function fill(cfg) {
-    var name = cfg.title || "VPN";
-    document.title = name + (T === RU ? " — быстрый VPN" : " — fast VPN");
-    $("#brandName").textContent = name;
-    $("#footBrand").textContent = name;
-    $("#heroEyebrow").textContent = cfg.greeting || T.eyebrow;
-    $("#heroTitle").textContent = cfg.headline || T.heroTitle;
-    $("#heroSub").textContent = cfg.subheadline || T.heroSub;
-    $("#footYear").textContent = "© " + new Date().getFullYear() + " " + name;
+    var name = cfg.title || "На связи";
+    document.title = name + " — интернет без границ";
+    ["#brandName", "#posterBrand", "#footBrand"].forEach(function (selector) { $(selector).textContent = name; });
+    $("#heroEyebrow").textContent = cfg.greeting || DEFAULTS.eyebrow;
+    $("#heroTitle").textContent = cfg.headline || DEFAULTS.headline;
+    $("#heroSub").textContent = cfg.subheadline || DEFAULTS.subheadline;
+    $("#footYear").textContent = "© " + new Date().getFullYear();
+
     var trust = $("#heroTrust");
     trust.innerHTML = "";
-    [T.trust1, T.trust2, T.trust3].forEach(function (x) {
-      trust.append(el("span", {}, [el("span", { class: "dot" }), x]));
-    });
+    DEFAULTS.trust.forEach(function (item) { trust.append(el("span", {}, [el("i", {}), item])); });
+
     var href = cabinetHref(cfg);
-    ["#navCabinet", "#heroCabinet", "#ctaBandBtn", "#footCabinet"].forEach(function (sel) {
-      var a = $(sel);
-      if (!a) return;
-      a.href = href;
-      a.setAttribute("target", href.charAt(0) === "/" ? "_self" : "_blank");
+    ["#navCabinet", "#heroCabinet", "#ctaBandBtn", "#footCabinet"].forEach(function (selector) {
+      var link = $(selector);
+      link.href = href;
+      link.target = linkTarget(href);
     });
   }
 
   function boot(cfg) {
-    if (params.get("variant")) cfg.template = params.get("variant"); // admin preview wins
-    theme(cfg);
-    applyI18n();
+    applyTheme(cfg);
     fill(cfg);
     renderPlans(cfg);
     renderFeatures(cfg);
     renderFaq(cfg);
   }
 
-  // theme toggle (persisted)
   $("#themeToggle").addEventListener("click", function () {
     var next = document.body.dataset.mode === "dark" ? "light" : "dark";
     document.body.dataset.mode = next;
-    try { localStorage.setItem("site_mode", next); } catch (e) {}
+    try { localStorage.setItem("site_mode", next); } catch (error) {}
   });
 
-  var saved = null;
-  try { saved = localStorage.getItem("site_mode"); } catch (e) {}
-  if (saved && !params.get("mode")) document.body.dataset.mode = saved;
-
   fetch("/api/cabinet/public/landing")
-    .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+    .then(function (response) { return response.ok ? response.json() : Promise.reject(); })
     .then(function (cfg) {
-      if (cfg.enabled === false && !params.get("variant")) {
-        // Landing disabled → send visitors straight to the cabinet/bot.
+      if (cfg.enabled === false && !params.get("preview")) {
         location.replace(cabinetHref(cfg));
         return;
       }
