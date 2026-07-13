@@ -6,8 +6,8 @@
     <meta name="theme-color" content="#f5f6f1" />
     <title>На связи — открыть Telegram</title>
     <meta name="description" content="Откройте доступ к Telegram и перейдите в личный кабинет На связи." />
-    <link rel="stylesheet" href="../site.css?v=brand-v1" />
-    <link rel="stylesheet" href="gateway.css?v=brand-v1" />
+    <link rel="stylesheet" href="../site.css?v=brand-v2" />
+    <link rel="stylesheet" href="gateway.css?v=brand-v2" />
   </head>
   <body data-mode="light">
     <header class="topbar">
@@ -27,49 +27,69 @@
     </header>
 
     <main class="gateway-main shell">
-      <section class="gateway-brand-panel" aria-label="На связи">
-        <div class="gateway-orb gateway-orb-one"></div>
-        <div class="gateway-orb gateway-orb-two"></div>
-        <svg class="gateway-signal" viewBox="0 0 230 180" aria-hidden="true">
-          <path d="M12 76c57-57 149-57 206 0M50 116c36-36 94-36 130 0M87 151c17-17 40-17 57 0M111 174h8" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" />
-        </svg>
-        <div class="gateway-panel-copy">
-          <svg class="gateway-panel-logo" viewBox="0 0 40 40" aria-hidden="true">
-            <circle cx="20" cy="20" r="19" fill="currentColor" />
-            <path d="M10 18.5c5.5-5 14.5-5 20 0M14 23.5c3.4-3.1 8.6-3.1 12 0M19 28h2" fill="none" stroke="var(--brand)" stroke-width="2.5" stroke-linecap="round" />
+      <section class="gateway-hero">
+        <div class="gateway-heading">
+          <span class="pill">Личный кабинет в Telegram</span>
+          <h1>Два шага —<br />и вы на связи</h1>
+          <p>Сначала откройте доступ к Telegram, затем перейдите в бота. Если приложение уже работает — первый шаг можно пропустить.</p>
+        </div>
+        <div class="gateway-brand-panel" aria-label="На связи">
+          <div class="gateway-orb gateway-orb-one"></div>
+          <div class="gateway-orb gateway-orb-two"></div>
+          <svg class="gateway-signal" viewBox="0 0 230 180" aria-hidden="true">
+            <path d="M12 76c57-57 149-57 206 0M50 116c36-36 94-36 130 0M87 151c17-17 40-17 57 0M111 174h8" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" />
           </svg>
-          <strong id="panelBrandName">На связи</strong>
-          <span>Личный кабинет<br />в Telegram</span>
+          <div class="gateway-panel-copy">
+            <svg class="gateway-panel-logo" viewBox="0 0 40 40" aria-hidden="true">
+              <circle cx="20" cy="20" r="19" fill="currentColor" />
+              <path d="M10 18.5c5.5-5 14.5-5 20 0M14 23.5c3.4-3.1 8.6-3.1 12 0M19 28h2" fill="none" stroke="var(--brand)" stroke-width="2.5" stroke-linecap="round" />
+            </svg>
+            <strong id="panelBrandName">На связи</strong>
+            <span>Привычный интернет<br />и помощь рядом</span>
+          </div>
+          <div class="gateway-app-chip"><i></i><span>Telegram</span><strong>готов к работе</strong></div>
         </div>
       </section>
 
       <section class="gateway-content">
-        <div class="gateway-heading">
-          <span class="pill">Два коротких шага</span>
-          <h1>Откроем Telegram</h1>
-          <p>Если Telegram уже работает, сразу переходите ко второму шагу.</p>
-        </div>
-
         <div id="gatewaySteps" class="gateway-flow" hidden>
-          <article id="proxyStep" class="gateway-step">
+          <article id="proxyStep" class="gateway-step gateway-step-proxy">
+            <div class="gateway-step-visual" aria-hidden="true">
+              <span class="gateway-step-number">01</span>
+              <div class="proxy-card">
+                <div class="proxy-card-head"><i></i><span><small>Подключение</small><strong>MTProto Proxy</strong></span><b></b></div>
+                <div class="proxy-card-line"><span>Работает только в Telegram</span><strong>Безопасно</strong></div>
+              </div>
+              <span class="visual-caption">Можно отключить в любой момент</span>
+            </div>
             <span class="gateway-step-number">01</span>
-            <div>
+            <div class="gateway-step-copy">
+              <span class="gateway-step-kicker">Сначала</span>
               <h2>Доступ к Telegram</h2>
-              <p>Прокси работает только внутри Telegram. Его можно отключить в настройках приложения.</p>
-              <a id="proxyButton" class="button button-primary" href="#">Открыть прокси</a>
+              <p>Откроется системное окно Telegram. Нажмите «Подключить прокси» — он работает только внутри приложения.</p>
+              <a id="proxyButton" class="button button-primary" href="#">Подключить доступ</a>
             </div>
           </article>
 
-          <article id="botStep" class="gateway-step">
+          <article id="botStep" class="gateway-step gateway-step-bot">
+            <div class="gateway-step-visual" aria-hidden="true">
+              <span class="gateway-step-number">02</span>
+              <div class="bot-preview">
+                <div class="bot-preview-head"><i>Н</i><span><strong>На связи</strong><small>бот</small></span><b></b></div>
+                <div class="bot-message">Добро пожаловать!<br /><span>Личный кабинет готов.</span></div>
+                <div class="bot-action">Открыть кабинет</div>
+              </div>
+            </div>
             <span class="gateway-step-number">02</span>
-            <div>
+            <div class="gateway-step-copy">
+              <span class="gateway-step-kicker">Затем</span>
               <h2>Ваш личный кабинет</h2>
               <p id="botStepHint">После подключения прокси вернитесь сюда и откройте бота.</p>
-              <a id="botButton" class="button button-soft" href="#">Открыть бота</a>
+              <a id="botButton" class="button button-primary" href="#">Открыть Telegram-бота</a>
             </div>
           </article>
 
-          <p class="gateway-skip">Telegram уже работает? <a id="skipButton" href="#">Сразу открыть бота</a></p>
+          <p class="gateway-skip"><span>Telegram уже работает?</span><a id="skipButton" href="#">Сразу открыть бота →</a></p>
         </div>
 
         <div id="gatewayError" class="gateway-error" hidden>
@@ -80,6 +100,6 @@
       </section>
     </main>
 
-    <script src="gateway.js?v=brand-v1"></script>
+    <script src="gateway.js?v=brand-v2"></script>
   </body>
 </html>

@@ -433,15 +433,18 @@ async def test_public_landing_telegram_gateway_is_independent_from_bot_button(
     assert public["mtproto_proxy_url"] == proxy_url
     gateway_page = (await http.get("/telegram/")).text
     gateway_js = (await http.get("/telegram/gateway.js")).text
+    assert gateway_page.count('class="gateway-step ') == 2
+    assert "Два шага —" in gateway_page
+    assert "brand-v2" in gateway_page
     landing_page = (await http.get("/")).text
     assert "Интернет работает" in landing_page
     assert "Три шага — и вы на связи" in landing_page
     assert landing_page.count('class="step-card"') == 3
     assert "brand-v2" in landing_page
     assert "fonts.googleapis.com" not in landing_page
-    assert "Открыть прокси" in gateway_page
-    assert "Открыть бота" in gateway_page
-    assert "Личный кабинет<br />в Telegram" in gateway_page
+    assert "Подключить доступ" in gateway_page
+    assert "Открыть Telegram-бота" in gateway_page
+    assert "Привычный интернет<br />и помощь рядом" in gateway_page
     assert '"tg://proxy"' in gateway_js
     assert '"tg://resolve?domain="' in gateway_js
     assert '"https://t.me/" + clean' not in gateway_js
