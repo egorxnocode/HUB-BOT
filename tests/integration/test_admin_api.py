@@ -316,6 +316,45 @@ async def test_reset_subscription_keeps_local_state_when_panel_fails(
         assert owner is not None and owner.current_subscription_id == sub_id
 
 
+async def test_reset_subscription_commits_when_optional_drop_fails(
+    client: tuple[httpx.AsyncClient, ApiTestContainer], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from src.application.dto.pricing import PurchaseRequest
+    from src.core.enums import Currency, SubscriptionStatus
+    from src.core.exceptions import RemnawaveError
+    from tests.factories import make_plan, make_user
+
+    http, container = client
+    async with container.uow() as uow:
+        user = await make_user(uow, telegram_id=904)
+        plan, _ = await make_plan(uow, code="drop-failure")
+        req = PurchaseRequest(
+            user_id=user.id,
+            plan_id=plan.id,
+            duration_days=30,
+            currency=Currency.RUB,
+        )
+        sub = await container.subscriptions.grant(uow, user=user, plan=plan, req=req)
+        await uow.commit()
+        user_id, sub_id, panel_uuid = user.id, sub.id, sub.remnawave_uuid
+
+    async def fail_drop(_panel_uuid: object) -> None:
+        raise RemnawaveError("missing IP-Control scope")
+
+    monkeypatch.setattr(container.remnawave_client, "drop_connections", fail_drop)
+    auth = await _login(http)
+    res = await http.post(f"/api/admin/users/{user_id}/reset-subscription", headers=auth)
+    assert res.status_code == 200, res.text
+    assert panel_uuid is not None
+    assert container.remnawave_client.users[panel_uuid].is_enabled is False
+
+    async with container.uow() as uow:
+        saved = await uow.subscriptions.get(sub_id)
+        owner = await uow.users.get(user_id)
+        assert saved is not None and saved.status is SubscriptionStatus.DISABLED
+        assert owner is not None and owner.current_subscription_id is None
+
+
 async def test_bad_password_401(client: tuple[httpx.AsyncClient, ApiTestContainer]) -> None:
     http, _ = client
     res = await http.post(
