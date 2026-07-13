@@ -124,6 +124,9 @@ const ru = {
   giveTrial: "Выдать триал",
   syncPanel: "Синк с Remnawave",
   resetTraffic: "Сбросить трафик",
+  resetSubscription: "Сбросить подписку",
+  resetSubscriptionConfirm:
+    "Сбросить подписку? Доступ в Remnawave будет отключён, текущая подписка снята. История платежей сохранится.",
   extendHwid: "Расширить HWID",
   block: "Заблокировать",
   unblock: "Разблокировать",
@@ -141,6 +144,10 @@ const ru = {
   trafficPacks: "Пакеты трафика",
   devicesTrial: "Устройства и триал",
   planName: "Название",
+  deletePlan: "Удалить тариф",
+  deletePlanConfirm:
+    "Удалить тариф? Он исчезнет из продажи. Действующие подписки и история платежей сохранятся, но продлить этот удалённый тариф будет нельзя.",
+  deleted: "Удалено",
   days: "дней",
   price: "Цена",
   sales: "продаж",
@@ -476,6 +483,9 @@ const en: typeof ru = {
   giveTrial: "Grant trial",
   syncPanel: "Sync with Remnawave",
   resetTraffic: "Reset traffic",
+  resetSubscription: "Reset subscription",
+  resetSubscriptionConfirm:
+    "Reset this subscription? Remnawave access will be disabled and the current subscription detached. Payment history will be kept.",
   extendHwid: "Extend HWID",
   block: "Block",
   unblock: "Unblock",
@@ -492,6 +502,10 @@ const en: typeof ru = {
   trafficPacks: "Traffic packs",
   devicesTrial: "Devices & trial",
   planName: "Name",
+  deletePlan: "Delete plan",
+  deletePlanConfirm:
+    "Delete this plan? It will disappear from sale. Existing subscriptions and payment history remain, but this deleted plan cannot be renewed.",
+  deleted: "Deleted",
   days: "days",
   price: "Price",
   sales: "sales",

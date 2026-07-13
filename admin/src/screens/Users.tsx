@@ -421,6 +421,18 @@ export default function Users() {
                     >
                       {t.extendHwid}
                     </button>
+                    {d.subscription && (
+                      <button
+                        className="btn danger"
+                        onClick={async () => {
+                          if (await confirm(t.resetSubscriptionConfirm)) {
+                            act.mutate({ path: "/reset-subscription" });
+                          }
+                        }}
+                      >
+                        {t.resetSubscription}
+                      </button>
+                    )}
                     {d.status !== "blocked" ? (
                       <button
                         className="btn danger"

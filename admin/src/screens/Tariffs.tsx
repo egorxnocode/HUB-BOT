@@ -40,7 +40,7 @@ type PlanDraft = {
 type Squad = { id: number; name: string; uuid: string };
 
 export default function Tariffs() {
-  const { t, toast } = useApp();
+  const { t, toast, confirm } = useApp();
   const qc = useQueryClient();
   const [tab, setTab] = useState<"plans" | "constructor">("plans");
   const [draft, setDraft] = useState<PlanDraft | null>(null);
@@ -107,6 +107,18 @@ export default function Tariffs() {
     await api.patch(`/api/admin/plans/${p.id}`, { is_active: on });
     void qc.invalidateQueries({ queryKey: ["plans"] });
     toast(on ? t.on : t.off);
+  }
+
+  async function deletePlan() {
+    if (!draft?.id || !(await confirm(t.deletePlanConfirm))) return;
+    try {
+      await api.del(`/api/admin/plans/${draft.id}`);
+      setDraft(null);
+      void qc.invalidateQueries({ queryKey: ["plans"] });
+      toast(t.deleted);
+    } catch (e) {
+      toast((e as Error).message);
+    }
   }
 
   async function saveCtor() {
@@ -446,13 +458,22 @@ export default function Tariffs() {
             >
               + {t.periods}
             </button>
-            <div className="row" style={{ justifyContent: "flex-end" }}>
+            <div className="row" style={{ justifyContent: "space-between" }}>
+              <div>
+                {draft.id && (
+                  <button className="btn danger" onClick={() => void deletePlan()}>
+                    {t.deletePlan}
+                  </button>
+                )}
+              </div>
+              <div className="row">
               <button className="btn secondary" onClick={() => setDraft(null)}>
                 {t.cancel}
               </button>
               <button className="btn primary" disabled={!draft.name} onClick={savePlan}>
                 {t.save}
               </button>
+              </div>
             </div>
           </div>
         </Modal>
