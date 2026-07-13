@@ -35,7 +35,11 @@ run_spin() { # run_spin "подпись" cmd...
 }
 
 cd "$(dirname "$0")/.."
-COMPOSE="docker compose -f docker/compose.prod.yml"
+# Compose resolves interpolation relative to the first compose file on some
+# versions, so relying on implicit .env discovery can miss the repository-level
+# .env. Always pass it explicitly (the compose service env_file is a different
+# mechanism and does not provide values for ${...} interpolation).
+COMPOSE="docker compose --env-file .env -f docker/compose.prod.yml"
 [ -f .env ] || fail ".env не найден — сначала установка: ./scripts/install.sh"
 
 printf "\n"; hr

@@ -4,9 +4,9 @@
   var $ = function (selector) { return document.querySelector(selector); };
   var variants = { minimal: "a", private: "b", buddy: "c", native: "d", terminal: "e", magazine: "f", neon: "g", pop: "h" };
 
-  function safeBotUrl(username) {
+  function directBotUrl(username) {
     var clean = String(username || "").replace(/[^A-Za-z0-9_]/g, "");
-    return clean ? "https://t.me/" + clean + "?start=website" : null;
+    return clean ? "tg://resolve?domain=" + encodeURIComponent(clean) + "&start=website" : null;
   }
 
   function directProxyUrl(url) {
@@ -26,7 +26,7 @@
 
   function show(cfg) {
     var proxy = cfg.mtproto_proxy_url;
-    var bot = safeBotUrl(cfg.bot_username);
+    var bot = directBotUrl(cfg.bot_username);
     if (!cfg.telegram_gateway_url || !/^https:\/\/(?:t\.me|telegram\.me)\/proxy\?/i.test(proxy || "") || !bot) {
       $("#gatewayError").hidden = false;
       return;
@@ -35,8 +35,7 @@
     var name = cfg.title || "VPN";
     $("#brandName").textContent = name;
     document.title = name + " — личный кабинет в Telegram";
-    $("#proxyButton").href = proxy;
-    $("#proxyDirect").href = directProxyUrl(proxy);
+    $("#proxyButton").href = directProxyUrl(proxy);
     $("#botButton").href = bot;
     $("#skipButton").href = bot;
     $("#gatewaySteps").hidden = false;
@@ -47,7 +46,7 @@
       $("#proxyStep").classList.add("done");
       $("#botStep").classList.add("ready");
     }
-    [$("#proxyButton"), $("#proxyDirect")].forEach(function (link) {
+    [$("#proxyButton")].forEach(function (link) {
       link.addEventListener("click", function () {
         $("#proxyStep").classList.add("done");
         $("#botStep").classList.add("ready");
