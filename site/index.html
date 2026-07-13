@@ -3,104 +3,149 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>VPN</title>
-    <meta name="description" content="Быстрый VPN без ограничений. Оформи подписку за минуту." />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Nunito:wght@600;700;800;900&family=JetBrains+Mono:wght@400;600;700&family=Unbounded:wght@600;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="site.css" />
+    <meta name="theme-color" content="#f5f6f1" />
+    <title>На связи — интернет без границ</title>
+    <meta name="description" content="Привычный интернет на телефоне, компьютере и телевизоре. Подключение за две минуты." />
+    <link rel="stylesheet" href="site.css?v=brand-v1" />
   </head>
-  <body data-variant="a" data-mode="light">
-    <header class="nav">
-      <div class="wrap nav-in">
-        <a class="brand" href="#top"><span class="brand-mark">V</span><span id="brandName">VPN</span></a>
-        <nav class="nav-links">
-          <a href="#plans" data-i18n="navPlans">Тарифы</a>
-          <a href="#features" data-i18n="navFeatures">Возможности</a>
-          <a href="#faq" data-i18n="navFaq">Вопросы</a>
+  <body data-mode="light">
+    <svg class="svg-sprite" aria-hidden="true">
+      <symbol id="signal-logo" viewBox="0 0 40 40">
+        <circle cx="20" cy="20" r="19" fill="currentColor" />
+        <path d="M10 18.5c5.5-5 14.5-5 20 0M14 23.5c3.4-3.1 8.6-3.1 12 0M19 28h2" fill="none" stroke="var(--logo-ink, #fff)" stroke-width="2.5" stroke-linecap="round" />
+      </symbol>
+    </svg>
+
+    <header class="topbar">
+      <div class="shell topbar-in">
+        <a class="brand" href="#top" aria-label="На главную">
+          <svg class="brand-logo" aria-hidden="true"><use href="#signal-logo"></use></svg>
+          <span class="brand-copy"><strong id="brandName">На связи</strong><small>интернет без границ</small></span>
+        </a>
+        <nav class="topnav" aria-label="Основная навигация">
+          <a href="#how">Как работает</a>
+          <a href="#plans">Тарифы</a>
+          <a href="#faq">Вопросы</a>
         </nav>
-        <div class="nav-actions">
-          <button id="themeToggle" class="icon-btn" title="Тема" aria-label="Тема">◐</button>
-          <a id="navCabinet" class="btn primary sm" href="#" data-i18n="cabinet">Личный кабинет</a>
+        <div class="top-actions">
+          <button id="themeToggle" class="theme-button" type="button" aria-label="Сменить тему">◐</button>
+          <a id="navCabinet" class="button button-soft button-small" href="#">Уже пользуюсь</a>
         </div>
       </div>
     </header>
 
     <main id="top">
-      <section class="hero">
-        <div class="wrap hero-in">
-          <div class="hero-copy">
-            <div class="eyebrow" id="heroEyebrow"></div>
-            <h1 id="heroTitle" class="hero-title"></h1>
-            <p id="heroSub" class="hero-sub"></p>
-            <div class="hero-cta">
-              <a id="heroBuy" class="btn primary lg" href="#plans" data-i18n="buy">Купить подписку</a>
-              <a id="heroCabinet" class="btn ghost lg" href="#" data-i18n="cabinet">Личный кабинет</a>
-            </div>
-            <div class="hero-trust" id="heroTrust"></div>
+      <section class="hero shell">
+        <div class="hero-copy">
+          <span id="heroEyebrow" class="pill">VPN без сложных настроек</span>
+          <h1 id="heroTitle">Интернет работает.<br />Где бы вы ни были.</h1>
+          <p id="heroSub" class="lead">Открывайте привычные сайты и приложения на телефоне, компьютере и телевизоре. Подключение занимает две минуты.</p>
+          <div class="hero-actions">
+            <a id="heroBuy" class="button button-primary button-large" href="#plans">Подключиться</a>
+            <a id="heroCabinet" class="button button-soft button-large" href="#">Личный кабинет</a>
           </div>
-          <div class="hero-art" aria-hidden="true">
-            <div class="orb"></div>
-            <div class="glass-card">
-              <div class="gc-row"><span class="dot ok"></span><b data-i18n="statusOn">Защита включена</b></div>
-              <div class="gc-big"><span id="gcDays">30</span><small data-i18n="daysShort">дней</small></div>
-              <div class="gc-bar"><i></i></div>
-              <div class="gc-foot"><span data-i18n="speed">Скорость</span><b>10 Гбит/с</b></div>
+          <div id="heroTrust" class="proof-list"></div>
+        </div>
+
+        <div class="brand-stage" aria-label="На связи — пример приложения">
+          <div class="brand-poster">
+            <div class="poster-orb poster-orb-one"></div>
+            <div class="poster-orb poster-orb-two"></div>
+            <svg class="poster-signal" viewBox="0 0 210 170" aria-hidden="true">
+              <path d="M12 72c52-52 134-52 186 0M45 108c34-34 88-34 122 0M78 141c16-16 38-16 54 0M101 163h8" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" />
+            </svg>
+            <div class="poster-brand">
+              <svg class="poster-logo" aria-hidden="true"><use href="#signal-logo"></use></svg>
+              <strong id="posterBrand">На связи</strong>
+              <span>Привычный интернет<br />в любом месте</span>
             </div>
+          </div>
+
+          <div class="app-preview">
+            <div class="preview-head">
+              <div><span>Статус</span><strong><i></i>Подключено</strong></div>
+              <span class="avatar">А</span>
+            </div>
+            <div class="preview-days"><span>Подписка активна</span><b>23 дня</b><small>до 5 августа</small></div>
+            <div class="preview-action">Подключить устройство</div>
+            <div class="preview-meta"><span>Семейный</span><span>3 из 5 устройств</span></div>
           </div>
         </div>
       </section>
 
-      <section id="plans" class="section">
-        <div class="wrap">
-          <div class="sec-head">
-            <h2 data-i18n="plansTitle">Тарифы</h2>
-            <p class="sec-sub" data-i18n="plansSub">Оплата картой, СБП, криптой или Telegram Stars</p>
+      <section id="how" class="section shell section-line">
+        <div class="section-head section-head-left">
+          <span class="section-kicker">Как это работает</span>
+          <h2>Три шага — и вы на связи</h2>
+        </div>
+        <div class="steps">
+          <article><span>01</span><h3>Выберите тариф</h3><p>На день, месяц или сразу для всей семьи.</p></article>
+          <article><span>02</span><h3>Оплатите</h3><p>Картой, СБП или другим удобным способом.</p></article>
+          <article><span>03</span><h3>Подключитесь</h3><p>Приложение и понятная инструкция появятся сразу.</p></article>
+        </div>
+      </section>
+
+      <section id="plans" class="section plans-section">
+        <div class="shell">
+          <div class="section-head">
+            <span class="section-kicker">Тарифы</span>
+            <h2>Платите только за нужный срок</h2>
+            <p>Итоговая цена и стоимость месяца — без мелкого шрифта.</p>
           </div>
           <div id="planGrid" class="plan-grid"></div>
         </div>
       </section>
 
-      <section id="features" class="section alt">
-        <div class="wrap">
-          <div class="sec-head">
-            <h2 data-i18n="featuresTitle">Почему мы</h2>
-          </div>
-          <div id="featureGrid" class="feature-grid"></div>
+      <section id="features" class="section shell">
+        <div class="section-head section-head-left">
+          <span class="section-kicker">Возможности</span>
+          <h2>Всё нужное. Ничего лишнего.</h2>
         </div>
+        <div id="featureGrid" class="feature-grid"></div>
       </section>
 
-      <section id="faq" class="section">
-        <div class="wrap narrow">
-          <div class="sec-head">
-            <h2 data-i18n="faqTitle">Частые вопросы</h2>
+      <section id="faq" class="section faq-section">
+        <div class="shell faq-layout">
+          <div class="section-head section-head-left">
+            <span class="section-kicker">Поддержка</span>
+            <h2>Отвечаем по-человечески</h2>
+            <p>Коротко объясняем подключение и помогаем, если что-то не работает.</p>
           </div>
           <div id="faqList" class="faq-list"></div>
         </div>
       </section>
 
-      <section class="cta-band">
-        <div class="wrap cta-in">
-          <h2 id="ctaBandTitle" data-i18n="ctaBand">Готовы подключиться?</h2>
-          <a id="ctaBandBtn" class="btn primary lg" href="#" data-i18n="cabinet">Личный кабинет</a>
+      <section class="section shell">
+        <div class="final-banner">
+          <div class="final-orb"></div>
+          <svg class="final-signal" viewBox="0 0 170 130" aria-hidden="true">
+            <path d="M8 56c42-42 108-42 150 0M34 86c28-28 70-28 98 0M63 113c12-12 31-12 43 0" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round" />
+          </svg>
+          <div>
+            <span>На связи</span>
+            <h2 id="ctaBandTitle">Попробуйте без сложных настроек</h2>
+            <p>Выберите тариф — всё остальное мы покажем по шагам.</p>
+          </div>
+          <a id="ctaBandBtn" class="button button-light button-large" href="#">Подключиться</a>
         </div>
       </section>
     </main>
 
-    <footer class="foot">
-      <div class="wrap foot-in">
-        <span id="footBrand">VPN</span>
-        <span class="foot-links">
-          <a id="footCabinet" href="#" data-i18n="cabinet">Личный кабинет</a>
-          <a href="#plans" data-i18n="navPlans">Тарифы</a>
-        </span>
-        <span class="dim" id="footYear"></span>
+    <footer class="footer">
+      <div class="shell footer-in">
+        <div class="brand">
+          <svg class="brand-logo" aria-hidden="true"><use href="#signal-logo"></use></svg>
+          <span class="brand-copy"><strong id="footBrand">На связи</strong><small>интернет без границ</small></span>
+        </div>
+        <div class="footer-links">
+          <a id="footCabinet" href="#">Личный кабинет</a>
+          <a href="#plans">Тарифы</a>
+          <a href="#faq">Помощь</a>
+        </div>
+        <span id="footYear" class="footer-year"></span>
       </div>
     </footer>
 
-    <script src="site.js"></script>
+    <script src="site.js?v=brand-v1"></script>
   </body>
 </html>

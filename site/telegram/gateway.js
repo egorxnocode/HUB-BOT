@@ -2,7 +2,6 @@
   "use strict";
 
   var $ = function (selector) { return document.querySelector(selector); };
-  var variants = { minimal: "a", private: "b", buddy: "c", native: "d", terminal: "e", magazine: "f", neon: "g", pop: "h" };
 
   function directBotUrl(username) {
     var clean = String(username || "").replace(/[^A-Za-z0-9_]/g, "");
@@ -14,13 +13,12 @@
   }
 
   function applyTheme(cfg) {
-    var variant = variants[cfg.template] || cfg.template || "a";
-    document.body.dataset.variant = /^[a-h]$/.test(variant) ? variant : "a";
     var mode = null;
     try { mode = localStorage.getItem("site_mode"); } catch (e) {}
-    document.body.dataset.mode = mode === "dark" ? "dark" : "light";
-    if (cfg.accent_color && /^#[0-9a-fA-F]{3,8}$/.test(cfg.accent_color)) {
-      document.body.style.setProperty("--acc", cfg.accent_color);
+    var preferred = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    document.body.dataset.mode = mode === "dark" || (!mode && preferred === "dark") ? "dark" : "light";
+    if (cfg.accent_color && /^#[0-9a-fA-F]{6}$/.test(cfg.accent_color)) {
+      document.documentElement.style.setProperty("--brand", cfg.accent_color);
     }
   }
 
@@ -32,9 +30,10 @@
       return;
     }
     applyTheme(cfg);
-    var name = cfg.title || "VPN";
+    var name = cfg.title || "На связи";
     $("#brandName").textContent = name;
-    document.title = name + " — личный кабинет в Telegram";
+    $("#panelBrandName").textContent = name;
+    document.title = name + " — открыть Telegram";
     $("#proxyButton").href = directProxyUrl(proxy);
     $("#botButton").href = bot;
     $("#skipButton").href = bot;
@@ -50,6 +49,7 @@
       link.addEventListener("click", function () {
         $("#proxyStep").classList.add("done");
         $("#botStep").classList.add("ready");
+        $("#botStepHint").textContent = "Готово. Теперь откройте личный кабинет в Telegram.";
         try { localStorage.setItem("telegram_proxy_step_opened", "1"); } catch (e) {}
       });
     });

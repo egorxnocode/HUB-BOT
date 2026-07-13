@@ -3,70 +3,83 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Личный кабинет в Telegram</title>
-    <meta name="description" content="Подключите доступ к Telegram и откройте личный кабинет VPN." />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Nunito:wght@600;700;800;900&family=JetBrains+Mono:wght@400;600;700&family=Unbounded:wght@600;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="../site.css" />
-    <link rel="stylesheet" href="gateway.css" />
+    <meta name="theme-color" content="#f5f6f1" />
+    <title>На связи — открыть Telegram</title>
+    <meta name="description" content="Откройте доступ к Telegram и перейдите в личный кабинет На связи." />
+    <link rel="stylesheet" href="../site.css?v=brand-v1" />
+    <link rel="stylesheet" href="gateway.css?v=brand-v1" />
   </head>
-  <body data-variant="a" data-mode="light">
-    <header class="nav">
-      <div class="wrap nav-in">
-        <a class="brand" href="/"><span class="brand-mark">V</span><span id="brandName">VPN</span></a>
-        <div class="nav-actions">
-          <button id="themeToggle" class="icon-btn" title="Сменить тему" aria-label="Сменить тему">◐</button>
-          <a class="btn ghost sm" href="/">← На сайт</a>
+  <body data-mode="light">
+    <header class="topbar">
+      <div class="shell topbar-in">
+        <a class="brand" href="/" aria-label="Вернуться на сайт">
+          <svg class="gateway-brand-logo" viewBox="0 0 40 40" aria-hidden="true">
+            <circle cx="20" cy="20" r="19" fill="currentColor" />
+            <path d="M10 18.5c5.5-5 14.5-5 20 0M14 23.5c3.4-3.1 8.6-3.1 12 0M19 28h2" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" />
+          </svg>
+          <span class="brand-copy"><strong id="brandName">На связи</strong><small>интернет без границ</small></span>
+        </a>
+        <div class="top-actions">
+          <button id="themeToggle" class="theme-button" type="button" aria-label="Сменить тему">◐</button>
+          <a class="button button-soft button-small" href="/">← На сайт</a>
         </div>
       </div>
     </header>
 
-    <main class="gateway-main">
-      <section class="wrap gateway-wrap">
-        <div class="gateway-intro">
-          <span class="eyebrow">Доступ к личному кабинету</span>
-          <h1>Откройте кабинет в Telegram</h1>
-          <p>Если Telegram не открывается, сначала подключите прокси. Он действует только внутри Telegram и не меняет интернет на устройстве.</p>
+    <main class="gateway-main shell">
+      <section class="gateway-brand-panel" aria-label="На связи">
+        <div class="gateway-orb gateway-orb-one"></div>
+        <div class="gateway-orb gateway-orb-two"></div>
+        <svg class="gateway-signal" viewBox="0 0 230 180" aria-hidden="true">
+          <path d="M12 76c57-57 149-57 206 0M50 116c36-36 94-36 130 0M87 151c17-17 40-17 57 0M111 174h8" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" />
+        </svg>
+        <div class="gateway-panel-copy">
+          <svg class="gateway-panel-logo" viewBox="0 0 40 40" aria-hidden="true">
+            <circle cx="20" cy="20" r="19" fill="currentColor" />
+            <path d="M10 18.5c5.5-5 14.5-5 20 0M14 23.5c3.4-3.1 8.6-3.1 12 0M19 28h2" fill="none" stroke="var(--brand)" stroke-width="2.5" stroke-linecap="round" />
+          </svg>
+          <strong id="panelBrandName">На связи</strong>
+          <span>Личный кабинет<br />в Telegram</span>
+        </div>
+      </section>
+
+      <section class="gateway-content">
+        <div class="gateway-heading">
+          <span class="pill">Два коротких шага</span>
+          <h1>Откроем Telegram</h1>
+          <p>Если Telegram уже работает, сразу переходите ко второму шагу.</p>
         </div>
 
-        <div id="gatewaySteps" class="gateway-steps" hidden>
-          <article id="proxyStep" class="card gateway-step">
-            <div class="step-number">1</div>
-            <div class="step-copy">
-              <h2>Подключите доступ к Telegram</h2>
-              <p>Telegram покажет окно подключения. Нажмите «Подключить». Если прокси вам не нужен, этот шаг можно пропустить.</p>
-              <div class="step-actions">
-                <a id="proxyButton" class="btn primary lg" href="#">Открыть прокси в Telegram</a>
-              </div>
+        <div id="gatewaySteps" class="gateway-flow" hidden>
+          <article id="proxyStep" class="gateway-step">
+            <span class="gateway-step-number">01</span>
+            <div>
+              <h2>Доступ к Telegram</h2>
+              <p>Прокси работает только внутри Telegram. Его можно отключить в настройках приложения.</p>
+              <a id="proxyButton" class="button button-primary" href="#">Открыть прокси</a>
             </div>
           </article>
 
-          <div class="step-line" aria-hidden="true"></div>
-
-          <article id="botStep" class="card gateway-step">
-            <div class="step-number">2</div>
-            <div class="step-copy">
-              <h2>Откройте личный кабинет</h2>
-              <p>Вернитесь на эту страницу после подключения прокси и перейдите в бота.</p>
-              <a id="botButton" class="btn primary lg" href="#">Открыть бота в приложении Telegram</a>
+          <article id="botStep" class="gateway-step">
+            <span class="gateway-step-number">02</span>
+            <div>
+              <h2>Ваш личный кабинет</h2>
+              <p id="botStepHint">После подключения прокси вернитесь сюда и откройте бота.</p>
+              <a id="botButton" class="button button-soft" href="#">Открыть бота</a>
             </div>
           </article>
 
-          <p class="skip-copy">Telegram уже работает? <a id="skipButton" class="text-link" href="#">Сразу открыть бота в приложении</a></p>
+          <p class="gateway-skip">Telegram уже работает? <a id="skipButton" href="#">Сразу открыть бота</a></p>
         </div>
 
-        <div id="gatewayError" class="card gateway-error" hidden>
+        <div id="gatewayError" class="gateway-error" hidden>
           <h2>Воронка пока не настроена</h2>
           <p>Вернитесь на главную страницу или сообщите поддержке.</p>
-          <a class="btn ghost" href="/">Вернуться на сайт</a>
+          <a class="button button-soft" href="/">Вернуться на сайт</a>
         </div>
       </section>
     </main>
 
-    <script src="gateway.js"></script>
+    <script src="gateway.js?v=brand-v1"></script>
   </body>
 </html>
