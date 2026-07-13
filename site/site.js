@@ -165,7 +165,7 @@
         el("div", { class: "plan-description", text: plan.description || "" }),
         el("div", { class: "plan-price" }, [total, period, monthly]),
         durations.length > 1 ? durationList : null,
-        el("a", { class: "button " + (index === 1 ? "button-primary" : "button-soft"), href: href, target: linkTarget(href), text: index === 1 ? "Подключиться" : "Выбрать" }),
+        el("a", { class: "button button-primary", href: href, target: linkTarget(href), text: "Подключиться" }),
       ]);
       paint();
       grid.append(card);

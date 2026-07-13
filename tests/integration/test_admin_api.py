@@ -436,6 +436,8 @@ async def test_public_landing_telegram_gateway_is_independent_from_bot_button(
     landing_page = (await http.get("/")).text
     assert "Интернет работает" in landing_page
     assert "Три шага — и вы на связи" in landing_page
+    assert landing_page.count('class="step-card"') == 3
+    assert "brand-v2" in landing_page
     assert "fonts.googleapis.com" not in landing_page
     assert "Открыть прокси" in gateway_page
     assert "Открыть бота" in gateway_page
