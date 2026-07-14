@@ -435,12 +435,14 @@ async def test_public_landing_telegram_gateway_is_independent_from_bot_button(
     gateway_js = (await http.get("/telegram/gateway.js")).text
     assert gateway_page.count('class="gateway-step ') == 2
     assert "Два шага —" in gateway_page
-    assert "brand-v3" in gateway_page
+    assert "brand-v4" in gateway_page
+    assert "gateway-step-number" not in gateway_page
     landing_page = (await http.get("/")).text
     assert "Интернет работает" in landing_page
     assert "Три шага — и вы на связи" in landing_page
     assert landing_page.count('class="step-card"') == 3
-    assert "brand-v3" in landing_page
+    assert "brand-v4" in landing_page
+    assert "step-number" not in landing_page
     assert landing_page.count('class="brand-logo brand-mark"') == 2
     assert 'class="poster-logo brand-mark"' in landing_page
     assert "fonts.googleapis.com" not in landing_page
@@ -456,6 +458,8 @@ async def test_public_landing_telegram_gateway_is_independent_from_bot_button(
     assert "fonts.googleapis.com" not in miniapp_page
     assert 'document.body.dataset.mode = "dark"' in miniapp_js
     assert 'wa.onEvent("themeChanged"' not in miniapp_js
+    assert "step-num" not in miniapp_js
+    assert 'class: "step-icon"' in miniapp_js
     miniapp_logo = await http.get("/app/assets/nasvyazi-logo.png")
     assert miniapp_logo.status_code == 200
     assert miniapp_logo.headers["content-type"] == "image/png"

@@ -13,7 +13,7 @@
 
   // ---------- i18n ----------
   const RU = {
-    tabHome: "Главная", tabConnect: "Подключение", tabAccount: "Кабинет",
+    tabHome: "Главная", tabConnect: "Подключение", tabAccount: "Профиль",
     active: "Подписка активна", inactive: "Нет подписки", trial: "Пробный период",
     daysLeft: "дней осталось", till: "до", renew: "Продлить", buy: "Купить",
     choosePlan: "Тариф", payMethod: "Оплата", refTitle: "Пригласи друга",
@@ -283,6 +283,19 @@
               ]),
             ])
           : el("div", { class: "sub", style: "margin-top:10px", text: T.noSub }),
+        usable
+          ? el("div", { class: "status-footer" }, [
+              el("div", { class: "status-meta" }, [
+                el("span", { text: sub.plan_name || (T === RU ? "Подписка" : "Subscription") }),
+                el("strong", { text: `${T.balance} · ${money(me.user.balance_minor)}` }),
+              ]),
+              el("button", {
+                class: "btn status-connect",
+                onclick: () => { state.tab = "connect"; haptic(); render(); },
+                text: T === RU ? "Подключить устройство" : "Connect device",
+              }),
+            ])
+          : null,
         me && me.user.is_trial_available
           ? el("button", { class: "btn ghost", style: "margin-top:14px;" + btnStyle("trial"), onclick: activateTrial, text: "🎁 " + btnText("trial", T.trialBtn) })
           : null,
@@ -458,9 +471,16 @@
     const conn = state.connection;
     const frag = [];
     frag.push(
-      el("div", { class: "card fade" }, [
+      el("div", { class: "screen-intro fade" }, [
+        el("span", { class: "home-eyebrow", text: T === RU ? "Подключение" : "Connection" }),
+        el("h1", { text: T === RU ? "Добавьте устройство" : "Add a device" }),
+        el("p", { text: T === RU ? "Приложение, персональная ссылка — и готово." : "Install the app, add your personal link, and connect." }),
+      ]),
+    );
+    frag.push(
+      el("div", { class: "card fade connect-card" }, [
         el("div", { class: "step" }, [
-          el("span", { class: "step-num", text: "1" }),
+          el("span", { class: "step-icon", text: "↓" }),
           el("div", { style: "flex:1" }, [
             el("b", { text: T.step1 }),
             el("div", { class: "sub", style: "font-size:12.5px;margin:3px 0 10px", text: T.step1sub }),
@@ -470,9 +490,9 @@
       ]),
     );
     frag.push(
-      el("div", { class: "card fade" }, [
+      el("div", { class: "card fade connect-card featured" }, [
         el("div", { class: "step" }, [
-          el("span", { class: "step-num", text: "2" }),
+          el("span", { class: "step-icon", text: "↗" }),
           el("div", { style: "flex:1" }, [
             el("b", { text: T.step2 }),
             conn
@@ -510,9 +530,9 @@
       ]),
     );
     frag.push(
-      el("div", { class: "card fade" }, [
+      el("div", { class: "card fade connect-card" }, [
         el("div", { class: "step" }, [
-          el("span", { class: "step-num", text: "3" }),
+          el("span", { class: "step-icon done", text: "✓" }),
           el("div", {}, [
             el("b", { text: T.step3 }),
             el("div", { class: "sub", style: "font-size:12.5px;margin-top:3px", text: T.step3sub }),
@@ -529,24 +549,30 @@
     const sub = me.subscription;
     const frag = [];
     frag.push(
-      el("div", { class: "card fade row", style: "gap:12px" }, [
+      el("div", { class: "screen-intro fade" }, [
+        el("span", { class: "home-eyebrow", text: T.profile }),
+        el("h1", { text: T === RU ? "Ваш профиль" : "Your profile" }),
+        el("p", { text: T === RU ? "Подписка, устройства, платежи и помощь." : "Subscription, devices, payments and support." }),
+      ]),
+    );
+    frag.push(
+      el("div", { class: "card fade row profile-card" }, [
         el("div", {
-          style:
-            "width:46px;height:46px;border-radius:50%;background:var(--soft);color:var(--acc);display:grid;place-items:center;font-weight:800;font-size:17px",
+          class: "profile-avatar",
           text: (me.user.first_name || "?").slice(0, 1).toUpperCase(),
         }),
         el("div", {}, [
           el("b", { text: me.user.first_name || "—" }),
           el("div", { class: "sub", style: "font-size:12.5px", text: me.user.username ? "@" + me.user.username : "" }),
         ]),
-        el("div", { style: "margin-left:auto;text-align:right" }, [
+        el("div", { class: "profile-balance" }, [
           el("div", { class: "sub", style: "font-size:11px", text: T.balance }),
           el("b", { text: money(me.user.balance_minor) }),
         ]),
       ]),
     );
     frag.push(
-      el("div", { class: "card fade" }, [
+      el("div", { class: "card fade account-summary" }, [
         el("div", { class: "li" }, [
           el("span", { class: "sub", text: T.subscription }),
           el("b", { text: sub && sub.expire_at ? `${T.till} ${fmtDate(sub.expire_at)}` : "—" }),
