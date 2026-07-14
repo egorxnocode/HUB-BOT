@@ -91,5 +91,19 @@ window.__MOCK__ = {
       hiddify: "hiddify://import/https://sub.vpn.app/u/8fk2...",
       streisand: "streisand://import/https://sub.vpn.app/u/8fk2...",
     },
+    platforms: [
+      { id: "ios", label: "iPhone / iPad", tv: false, apps: [
+        { id: "happ-ios", name: "Happ", icon_url: "", download_url: "https://apps.apple.com", import_url: "happ://add/https://sub.vpn.app/u/demo", instruction: "Установите Happ и разрешите VPN-конфигурацию." },
+        { id: "incy-ios", name: "INCY", icon_url: "", download_url: "", import_url: "incy://add/https://sub.vpn.app/u/demo", instruction: "Установите INCY и разрешите VPN-конфигурацию." },
+      ]},
+      { id: "android", label: "Android", tv: false, apps: [
+        { id: "happ-android", name: "Happ", icon_url: "", download_url: "https://play.google.com", import_url: "happ://add/https://sub.vpn.app/u/demo", instruction: "Установите Happ и добавьте подписку." },
+        { id: "incy-android", name: "INCY", icon_url: "", download_url: "", import_url: "incy://add/https://sub.vpn.app/u/demo", instruction: "Установите INCY и добавьте подписку." },
+      ]},
+      { id: "windows", label: "Windows", tv: false, apps: [{ id: "happ-windows", name: "Happ", icon_url: "", download_url: "https://github.com", import_url: "happ://add/https://sub.vpn.app/u/demo", instruction: "Установите приложение и добавьте профиль." }] },
+      { id: "macos", label: "macOS", tv: false, apps: [{ id: "happ-macos", name: "Happ", icon_url: "", download_url: "https://github.com", import_url: "happ://add/https://sub.vpn.app/u/demo", instruction: "Установите приложение и добавьте профиль." }] },
+      { id: "android_tv", label: "Android TV", tv: true, apps: [{ id: "happ-android-tv", name: "Happ", icon_url: "", download_url: "https://play.google.com", import_url: "happ://add/https://sub.vpn.app/u/demo", instruction: "Установите Happ на телевизор.", tv_web_import_url: "https://tv.happ.su", tv_help_url: "https://www.happ.su/main/faq/android-tv", tv_transfer_value: "https://sub.vpn.app/u/demo" }] },
+      { id: "apple_tv", label: "Apple TV", tv: true, apps: [{ id: "happ-apple-tv", name: "Happ", icon_url: "", download_url: "https://apps.apple.com", import_url: "happ://add/https://sub.vpn.app/u/demo", instruction: "Установите Happ на Apple TV.", tv_web_import_url: "https://tv.happ.su", tv_help_url: "https://www.happ.su/main/faq/apple-tv-tvos", tv_transfer_value: "https://sub.vpn.app/u/demo" }] },
+    ],
   },
 };

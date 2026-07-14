@@ -115,7 +115,8 @@ JWT-логин (`ADMIN__USERNAME`/`ADMIN__PASSWORD`). 15 экранов на р�
 
 ### ⚙️ Cabinet API (`src/web/routes/cabinet.py`)
 `/api/cabinet/*` для мини-аппы: me, plans, constructor, purchase (баланс + Stars + онлайн-шлюзы),
-promocode, trial, referral, connection (deep-links happ/v2raytun/hiddify/streisand),
+promocode, trial, referral, connection (platform catalogue shared with the bot/web
+cabinet and exported to Remnawave; Happ + INCY on iOS/Android, desktop and TV guides),
 devices (список/отвязка HWID). Готово.
 
 ### ⏰ Фоновые задачи (`src/infrastructure/taskiq/tasks.py`)

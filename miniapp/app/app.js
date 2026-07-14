@@ -147,17 +147,14 @@
   }
   function detectPlatform() {
     const p = (wa && wa.platform) || "";
-    if (p === "ios" || /iPhone|iPad/i.test(navigator.userAgent))
-      return { name: "iOS", store: "https://apps.apple.com/app/happ-proxy-utility/id6504287215", client: "happ" };
-    if (p === "android" || /Android/i.test(navigator.userAgent))
-      return { name: "Android", store: "https://play.google.com/store/apps/details?id=com.happproxy", client: "happ" };
-    if (/Mac/i.test(navigator.userAgent))
-      return { name: "macOS", store: "https://apps.apple.com/app/happ-proxy-utility/id6504287215", client: "happ" };
-    return { name: "Windows", store: "https://github.com/hiddify/hiddify-app/releases", client: "hiddify" };
+    if (p === "ios" || /iPhone|iPad/i.test(navigator.userAgent)) return "ios";
+    if (p === "android" || /Android/i.test(navigator.userAgent)) return "android";
+    if (/Mac/i.test(navigator.userAgent)) return "macos";
+    return "windows";
   }
 
   // ---------- state ----------
-  const state = { tab: "home", me: null, plans: null, constructor: null, referral: null, payments: null, connection: null, tariffSel: 0, planSel: 0, cPerSel: 0, cPackSel: 0, paySel: "stars", devices: undefined };
+  const state = { tab: "home", me: null, plans: null, constructor: null, referral: null, payments: null, connection: null, connectionPlatform: null, connectionApp: null, tvPair: null, tariffSel: 0, planSel: 0, cPerSel: 0, cPackSel: 0, paySel: "stars", devices: undefined };
   // admin overrides: {scale, sections:[order], hidden:[keys], buttons:{key:{text,color}},
   // blocks:[{screen,title,text,icon,url,button_label,color}], buttons_extra:[{screen,label,url,color,style}]}
   let UI = {};
@@ -469,80 +466,79 @@
   }
 
   function connectScreen() {
-    const plat = detectPlatform();
     const conn = state.connection;
+    const platforms = (conn && conn.platforms) || [];
+    const detected = detectPlatform();
+    if (!state.connectionPlatform && platforms.length) {
+      state.connectionPlatform = (platforms.find((p) => p.id === detected) || platforms[0]).id;
+    }
+    const platform = platforms.find((p) => p.id === state.connectionPlatform) || platforms[0];
+    if (platform && !platform.apps.some((a) => a.id === state.connectionApp)) {
+      state.connectionApp = platform.apps[0] && platform.apps[0].id;
+      state.tvPair = null;
+    }
+    const selected = platform && platform.apps.find((a) => a.id === state.connectionApp);
     const frag = [];
     frag.push(
       el("div", { class: "screen-intro fade" }, [
         el("span", { class: "home-eyebrow", text: T === RU ? "Подключение" : "Connection" }),
         el("h1", { text: T === RU ? "Добавьте устройство" : "Add a device" }),
-        el("p", { text: T === RU ? "Приложение, персональная ссылка — и готово." : "Install the app, add your personal link, and connect." }),
+        el("p", { text: T === RU ? "Выберите устройство и приложение — персональная подписка придёт из Remnawave автоматически." : "Choose a device and app — your personal subscription is loaded automatically." }),
       ]),
     );
-    frag.push(
-      el("div", { class: "card fade connect-card" }, [
-        el("div", { class: "step" }, [
-          el("span", { class: "step-icon", text: "↓" }),
-          el("div", { style: "flex:1" }, [
-            el("b", { text: T.step1 }),
-            el("div", { class: "sub", style: "font-size:12.5px;margin:3px 0 10px", text: T.step1sub }),
-            el("button", { class: "btn ghost", onclick: () => (wa && wa.openLink ? wa.openLink(plat.store) : window.open(plat.store)), text: `${T.download} · ${plat.name}` }),
-          ]),
+    if (!conn) {
+      frag.push(el("div", { class: "card fade connect-card" }, [
+        el("button", { class: "btn primary", onclick: loadConnection, text: btnText("get_link", T.getLink) }),
+      ]));
+      return frag.concat(customItems("connect"));
+    }
+    frag.push(el("div", { class: "device-switch fade" }, platforms.map((p) =>
+      el("button", {
+        class: `device-chip${p.id === state.connectionPlatform ? " on" : ""}`,
+        onclick: () => { state.connectionPlatform = p.id; state.connectionApp = null; state.tvPair = null; render(); },
+        text: p.label,
+      })
+    )));
+    frag.push(el("div", { class: "app-grid fade" }, (platform && platform.apps || []).map((a) =>
+      el("button", {
+        class: `app-choice${a.id === state.connectionApp ? " on" : ""}`,
+        onclick: () => { state.connectionApp = a.id; state.tvPair = null; render(); },
+      }, [
+        a.icon_url ? el("img", { src: a.icon_url, alt: "" }) : el("span", { class: "app-fallback", text: a.name.slice(0, 1) }),
+        el("span", {}, [el("b", { text: a.name }), el("small", { text: pLabel(platform.id) })]),
+      ])
+    )));
+    if (selected) frag.push(
+      el("div", { class: "card fade connect-card featured app-guide" }, [
+        el("div", { class: "guide-head" }, [
+          selected.icon_url ? el("img", { class: "guide-icon", src: selected.icon_url, alt: "" }) : el("span", { class: "guide-icon app-fallback", text: selected.name.slice(0, 1) }),
+          el("div", {}, [el("span", { class: "home-eyebrow", text: platform.label }), el("h2", { text: selected.name })]),
         ]),
-      ]),
-    );
-    frag.push(
-      el("div", { class: "card fade connect-card featured" }, [
-        el("div", { class: "step" }, [
-          el("span", { class: "step-icon", text: "↗" }),
-          el("div", { style: "flex:1" }, [
-            el("b", { text: T.step2 }),
-            conn
-              ? el("div", { style: "margin-top:10px;display:grid;gap:9px" }, [
-                  // Raw link + copy hidden when the owner enabled HIDE_SUBSCRIPTION_LINK;
-                  // the one-tap import button stays so connecting still works (HIDE-1).
-                  conn.hide_link
-                    ? null
-                    : el("div", { class: "link-box mono", text: conn.subscription_url }),
-                  el("button", {
-                    class: "btn primary",
-                    style: btnStyle("open_app"),
-                    onclick: () => {
-                      haptic();
-                      const dl = conn.deep_links || {};
-                      const target = dl[plat.client] || dl.happ || conn.subscription_url;
-                      if (target) location.href = target;
-                    },
-                    text: "⚡ " + btnText("open_app", T.openApp),
-                  }),
-                  conn.hide_link
-                    ? null
-                    : el("button", {
-                        class: "btn ghost",
-                        onclick: async () => {
-                          (await copyText(conn.subscription_url)) && toast(T.copied);
-                          haptic("ok");
-                        },
-                        text: T.copy,
-                      }),
-                ].filter(Boolean))
-              : el("button", { class: "btn primary", style: "margin-top:10px;" + btnStyle("get_link"), onclick: loadConnection, text: btnText("get_link", T.getLink) }),
-          ]),
+        el("div", { class: "guide-steps" }, [
+          el("div", {}, [el("span", { text: "1" }), el("p", { text: selected.instruction || (T === RU ? "Установите приложение на устройство." : "Install the app.") })]),
+          el("div", {}, [el("span", { text: "2" }), el("p", { text: platform.tv ? (T === RU ? "В Happ на телевизоре выберите Web Import — приложение покажет временный код или QR." : "Choose Web Import in Happ on the TV — the app will show a temporary code or QR.") : (T === RU ? "Нажмите «Добавить подписку» — приложение получит актуальную конфигурацию Remnawave." : "Tap Add subscription to import the current Remnawave configuration.") })]),
+          el("div", {}, [el("span", { text: "3" }), el("p", { text: T === RU ? "Разрешите VPN-подключение и включите его." : "Allow the VPN profile and connect." })]),
         ]),
-      ]),
-    );
-    frag.push(
-      el("div", { class: "card fade connect-card" }, [
-        el("div", { class: "step" }, [
-          el("span", { class: "step-icon done", text: "✓" }),
-          el("div", {}, [
-            el("b", { text: T.step3 }),
-            el("div", { class: "sub", style: "font-size:12.5px;margin-top:3px", text: T.step3sub }),
-          ]),
-        ]),
-      ]),
+        selected.download_url ? el("button", { class: "btn ghost", onclick: () => (wa && wa.openLink ? wa.openLink(selected.download_url) : window.open(selected.download_url)), text: `↓ ${T.download} ${selected.name}` }) : el("div", { class: "missing-link", text: T === RU ? "Ссылка на скачивание пока не заполнена владельцем" : "Download link is not configured yet" }),
+        platform.tv && selected.tv_web_import_url ? el("div", { class: "tv-actions" }, [
+          el("button", { class: "btn primary", onclick: async () => {
+            if (await copyText(selected.tv_transfer_value)) {
+              toast(T === RU ? "Подписка скопирована" : "Subscription copied");
+              haptic("ok");
+              wa && wa.openLink ? wa.openLink(selected.tv_web_import_url) : window.open(selected.tv_web_import_url);
+            }
+          }, text: T === RU ? "Скопировать и открыть Web Import" : "Copy and open Web Import" }),
+          el("button", { class: "btn ghost", onclick: () => (wa && wa.openLink ? wa.openLink(selected.tv_help_url) : window.open(selected.tv_help_url)), text: T === RU ? "Инструкция для телевизора" : "TV instructions" }),
+          el("div", { class: "tv-note", text: T === RU ? "Быстрее: откройте «+» в Happ на ТВ и отсканируйте QR мобильным Happ — телефон и телевизор должны быть в одной Wi‑Fi сети." : "Faster: open + in Happ on TV and scan its QR with Happ on your phone while both are on the same Wi-Fi." }),
+        ]) : el("button", { class: "btn primary", onclick: () => { haptic(); location.href = selected.import_url; }, text: T === RU ? "Добавить подписку" : "Add subscription" }),
+        conn.hide_link ? null : el("button", { class: "btn link-copy", onclick: async () => { (await copyText(conn.subscription_url)) && toast(T.copied); }, text: T.copy }),
+      ].filter(Boolean)),
     );
     return frag.concat(customItems("connect"));
+  }
+
+  function pLabel(id) {
+    return ({ ios: "iOS", android: "Android", windows: "Windows", macos: "macOS", android_tv: "Android TV", apple_tv: "Apple TV" })[id] || id;
   }
 
   function accountScreen() {
