@@ -466,6 +466,7 @@ async def test_public_landing_telegram_gateway_is_independent_from_bot_button(
     assert 'class: "device-picker fade"' in miniapp_js
     assert 'class: "subscription-link"' in miniapp_js
     assert 'class: "btn qr-button"' in miniapp_js
+    assert "qrPanel(selected.import_url)" in miniapp_js
     assert "Remnawave автоматически" not in miniapp_js
     assert "class: `app-choice" in miniapp_js
     assert 'class: "legal-link"' in miniapp_js
@@ -475,6 +476,7 @@ async def test_public_landing_telegram_gateway_is_independent_from_bot_button(
     assert 'src="vendor/qrcode.min.js"' in web_page
     assert 'class: "subscription-link"' in web_js
     assert 'class: "btn qr-button"' in web_js
+    assert "qrPanel(selected.import_url)" in web_js
     miniapp_logo = await http.get("/app/assets/nasvyazi-logo.png")
     assert miniapp_logo.status_code == 200
     assert miniapp_logo.headers["content-type"] == "image/png"
