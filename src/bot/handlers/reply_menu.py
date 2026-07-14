@@ -145,6 +145,7 @@ async def _open_action(
         "nodes": actions.act_nodes,
         "proxy": actions.act_proxy,
         "support": actions.act_support,
+        "documents": actions.act_documents,
     }
     handler = handlers.get(code)
     if handler is not None:

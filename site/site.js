@@ -34,6 +34,8 @@
     bot_username: "",
     cabinet_url: "/web/",
     telegram_gateway_url: null,
+    privacy_policy_url: "https://telegra.ph/POLITIKA-KONFIDENCIALNOSTI-07-14-52",
+    public_offer_url: "https://telegra.ph/PUBLICHNAYA-OFERTA-07-14-6",
     plans: [
       { name: "На день", description: "Попробовать или взять в поездку", durations: [{ days: 1, months: 0, price_minor: 2900 }] },
       { name: "Стандартный", description: "Для телефона и компьютера", durations: [{ days: 30, months: 1, price_minor: 27900 }, { days: 90, months: 3, price_minor: 74900 }] },
@@ -225,6 +227,11 @@
       var link = $(selector);
       link.href = href;
       link.target = linkTarget(href);
+    });
+    [["#footPrivacy", cfg.privacy_policy_url], ["#footOffer", cfg.public_offer_url]].forEach(function (item) {
+      var link = $(item[0]);
+      if (item[1] && /^https:\/\//i.test(item[1])) link.href = item[1];
+      else link.hidden = true;
     });
   }
 

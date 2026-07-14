@@ -42,6 +42,7 @@ MENU_ACTIONS: tuple[MenuAction, ...] = (
     MenuAction("nodes", "Статус серверов", "Server status"),
     MenuAction("proxy", "MTProto-прокси", "MTProto proxy"),
     MenuAction("support", "Поддержка", "Support"),
+    MenuAction("documents", "Документы", "Documents"),
 )
 
 # Runtime "smart" shortcuts the menu renderer appends when applicable — (label, action code).

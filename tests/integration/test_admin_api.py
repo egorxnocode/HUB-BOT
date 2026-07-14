@@ -431,6 +431,8 @@ async def test_public_landing_telegram_gateway_is_independent_from_bot_button(
     assert public["cta_target"] == "telegram"
     assert public["telegram_gateway_url"] == "/telegram/"
     assert public["mtproto_proxy_url"] == proxy_url
+    assert public["privacy_policy_url"] == "https://telegra.ph/POLITIKA-KONFIDENCIALNOSTI-07-14-52"
+    assert public["public_offer_url"] == "https://telegra.ph/PUBLICHNAYA-OFERTA-07-14-6"
     gateway_page = (await http.get("/telegram/")).text
     gateway_js = (await http.get("/telegram/gateway.js")).text
     assert gateway_page.count('class="gateway-step ') == 2
@@ -442,6 +444,8 @@ async def test_public_landing_telegram_gateway_is_independent_from_bot_button(
     assert "Три шага — и вы на связи" in landing_page
     assert landing_page.count('class="step-card"') == 3
     assert "brand-v4" in landing_page
+    assert "footPrivacy" in landing_page
+    assert "footOffer" in landing_page
     assert "step-number" not in landing_page
     assert landing_page.count('class="brand-logo brand-mark"') == 2
     assert 'class="poster-logo brand-mark"' in landing_page
@@ -460,6 +464,7 @@ async def test_public_landing_telegram_gateway_is_independent_from_bot_button(
     assert 'wa.onEvent("themeChanged"' not in miniapp_js
     assert "step-num" not in miniapp_js
     assert 'class: "step-icon"' in miniapp_js
+    assert 'class: "legal-link"' in miniapp_js
     miniapp_logo = await http.get("/app/assets/nasvyazi-logo.png")
     assert miniapp_logo.status_code == 200
     assert miniapp_logo.headers["content-type"] == "image/png"
