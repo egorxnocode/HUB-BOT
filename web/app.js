@@ -77,7 +77,13 @@ function el(tag, attrs = {}, children = []) {
 }
 
 function brand() {
-  return el("div", { class: "brand" }, [el("span", {}, "VPN"), el("span", { class: "b" }, "HUB")]);
+  return el("div", { class: "brand" }, [
+    el("span", { class: "brand-mark", "aria-hidden": "true" }),
+    el("span", { class: "brand-copy" }, [
+      el("strong", {}, "На связи"),
+      el("small", {}, "личный кабинет"),
+    ]),
+  ]);
 }
 
 /* ---------- auth screens ---------- */

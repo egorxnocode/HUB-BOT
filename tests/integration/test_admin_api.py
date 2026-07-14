@@ -435,12 +435,14 @@ async def test_public_landing_telegram_gateway_is_independent_from_bot_button(
     gateway_js = (await http.get("/telegram/gateway.js")).text
     assert gateway_page.count('class="gateway-step ') == 2
     assert "Два шага —" in gateway_page
-    assert "brand-v2" in gateway_page
+    assert "brand-v3" in gateway_page
     landing_page = (await http.get("/")).text
     assert "Интернет работает" in landing_page
     assert "Три шага — и вы на связи" in landing_page
     assert landing_page.count('class="step-card"') == 3
-    assert "brand-v2" in landing_page
+    assert "brand-v3" in landing_page
+    assert landing_page.count('class="brand-logo brand-mark"') == 2
+    assert 'class="poster-logo brand-mark"' in landing_page
     assert "fonts.googleapis.com" not in landing_page
     assert 'data-mode="dark"' in landing_page
     assert "themeToggle" not in landing_page
@@ -450,13 +452,21 @@ async def test_public_landing_telegram_gateway_is_independent_from_bot_button(
     miniapp_js = (await http.get("/app/app.js")).text
     assert 'data-mode="dark"' in miniapp_page
     assert 'class="app-brand"' in miniapp_page
-    assert "assets/nasvyazi-logo.png" in miniapp_page
+    assert 'class="app-brand-logo"' in miniapp_page
     assert "fonts.googleapis.com" not in miniapp_page
     assert 'document.body.dataset.mode = "dark"' in miniapp_js
     assert 'wa.onEvent("themeChanged"' not in miniapp_js
     miniapp_logo = await http.get("/app/assets/nasvyazi-logo.png")
     assert miniapp_logo.status_code == 200
     assert miniapp_logo.headers["content-type"] == "image/png"
+    site_css = (await http.get("/site.css")).text
+    miniapp_css = (await http.get("/app/app.css")).text
+    web_page = (await http.get("/web/")).text
+    web_css = (await http.get("/web/style.css")).text
+    assert "assets/nasvyazi-logo.png" in site_css
+    assert "assets/nasvyazi-logo.png" in miniapp_css
+    assert "На связи — личный кабинет" in web_page  # noqa: RUF001
+    assert "assets/nasvyazi-logo.png" in web_css
     assert "Подключить доступ" in gateway_page
     assert "Открыть Telegram-бота" in gateway_page
     assert "Привычный интернет<br />и помощь рядом" in gateway_page

@@ -75,6 +75,24 @@ body {
   font-size: 13px;
   letter-spacing: 0.06em;
 }
+.admin-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  line-height: 1;
+}
+.admin-brand-mark {
+  width: 2.55em;
+  height: 2.55em;
+  flex: 0 0 auto;
+  background: linear-gradient(145deg, #78a9ff 0%, #48d7b4 48%, #ffb86b 100%);
+  -webkit-mask: url("./assets/nasvyazi-logo.png") center / contain no-repeat;
+  mask: url("./assets/nasvyazi-logo.png") center / contain no-repeat;
+  filter: drop-shadow(0 5px 14px rgba(72, 215, 180, 0.17));
+}
+.admin-brand-copy { display: grid; gap: 4px; }
+.admin-brand-copy strong { color: var(--text); font-size: 1em; letter-spacing: -0.03em; }
+.admin-brand-copy small { color: var(--muted); font-size: .48em; letter-spacing: .08em; text-transform: uppercase; }
 .side-group {
   padding: 14px 16px 4px;
 }
