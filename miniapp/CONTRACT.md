@@ -151,7 +151,10 @@ phone copies the Remnawave subscription and opens `tv.happ.su`. The faster local
 scans the TV QR from mobile Happ on the same Wi-Fi network.
 
 Admin endpoint `GET /api/admin/miniapp/connection-apps/remnawave` exports the same
-catalogue in Remnawave Subscription Page `app-config.json` v1 format.
+catalogue in Remnawave Subscription Page `app-config.json` v1 format. Prefer the live,
+non-secret URL `GET /api/cabinet/public/connection-apps/remnawave` as the page's remote
+app config: after this one-time setup, saving the catalogue in HUB-BOT Admin updates all
+four surfaces without uploading another file.
 
 ### `GET /api/cabinet/public/landing`
 

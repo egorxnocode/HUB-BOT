@@ -173,6 +173,7 @@ def _serialize(cfg: Any) -> dict[str, Any]:
         "ui_button_keys": list(UI_BUTTON_KEYS),
         "ui_sections": list(UI_SECTIONS),
         "ui_screens": list(UI_SCREENS),
+        "remnawave_catalog_url": "/api/cabinet/public/connection-apps/remnawave",
     }
 
 
