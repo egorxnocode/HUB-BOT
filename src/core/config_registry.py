@@ -680,6 +680,26 @@ REGISTRY: tuple[ParamSpec, ...] = (
         "Публичная HTTPS-ссылка; показывается в боте, Mini App и на сайте",
         "Public HTTPS URL shown in the bot, Mini App and website",
     ),
+    _p(
+        "LEGAL_CONSENT_REQUIRED",
+        C.INTERFACE,
+        BOOL,
+        True,
+        "Обязательное согласие с документами",
+        "Require legal consent",
+        "Не открывать функции бота, пока пользователь не примет политику и оферту",
+        "Block bot features until the user accepts the privacy policy and public offer",
+    ),
+    _p(
+        "LEGAL_DOCUMENTS_VERSION",
+        C.INTERFACE,
+        STR,
+        "2026-07-14",
+        "Версия юридических документов",
+        "Legal documents version",
+        "Измените значение после существенного обновления документов — бот запросит согласие снова",
+        "Change after a material document update to request consent again",
+    ),
     # --- AI SUPPORT ---------------------------------------------------------------
     _p(
         "AI_SUPPORT_ENABLED",

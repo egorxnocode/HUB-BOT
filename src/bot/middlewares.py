@@ -11,6 +11,7 @@ from aiogram.types import User as TgUser
 
 from src.application.events import UserRegistered
 from src.application.services.ids import generate_referral_code
+from src.bot.consent import requires_legal_consent, show_legal_consent
 from src.core.enums import Locale, Role, UserStatus
 from src.infrastructure.database.models.user import User
 from src.infrastructure.di import AppContainer
@@ -83,6 +84,13 @@ class ContextMiddleware(BaseMiddleware):
             blacklisted = blacklist_on and await uow.blacklist.has(tg.id)
             rate_on = bool(await cfg.value(uow, "RATE_LIMIT_ENABLED"))
             cooldown = int(await cfg.value(uow, "RATE_LIMIT_COOLDOWN_SEC"))
+            legal_required = bool(await cfg.value(uow, "LEGAL_CONSENT_REQUIRED"))
+            legal_version = str(await cfg.value(uow, "LEGAL_DOCUMENTS_VERSION") or "")
+            privacy_url = str(await cfg.value(uow, "PRIVACY_POLICY_URL") or "")
+            offer_url = str(await cfg.value(uow, "PUBLIC_OFFER_URL") or "")
+            consent_required = requires_legal_consent(
+                user, required=legal_required, version=legal_version
+            )
             await uow.commit()
 
         if created:
@@ -100,9 +108,12 @@ class ContextMiddleware(BaseMiddleware):
             return None  # blocked users are ignored entirely
         if blacklisted and not is_admin:
             return None  # blacklisted id — ignored entirely (survives re-registration)
+        is_accept = isinstance(event, CallbackQuery) and event.data == "legal:accept"
+        is_start = isinstance(event, Message) and (event.text or "").startswith("/start")
         if (
             rate_on
             and not is_admin
+            and not is_accept
             and cooldown > 0
             and not await self.container.redis.set(f"rl:{tg.id}", "1", nx=True, ex=cooldown)
         ):
@@ -121,6 +132,19 @@ class ContextMiddleware(BaseMiddleware):
         data["db_user"] = user
         data["db_user_created"] = created
         data["is_admin"] = is_admin
+        data["legal_consent_required"] = consent_required
+        if (
+            consent_required
+            and not is_accept
+            and not is_start
+            and isinstance(event, Message | CallbackQuery)
+        ):
+            await show_legal_consent(
+                event,
+                privacy_url=privacy_url,
+                offer_url=offer_url,
+            )
+            return None
         return await handler(event, data)
 
     @staticmethod
