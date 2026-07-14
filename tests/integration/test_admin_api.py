@@ -442,6 +442,17 @@ async def test_public_landing_telegram_gateway_is_independent_from_bot_button(
     assert landing_page.count('class="step-card"') == 3
     assert "brand-v2" in landing_page
     assert "fonts.googleapis.com" not in landing_page
+    assert 'data-mode="dark"' in landing_page
+    assert "themeToggle" not in landing_page
+    assert 'data-mode="dark"' in gateway_page
+    assert "themeToggle" not in gateway_page
+    miniapp_page = (await http.get("/app/")).text
+    miniapp_js = (await http.get("/app/app.js")).text
+    assert 'data-mode="dark"' in miniapp_page
+    assert 'class="app-brand"' in miniapp_page
+    assert "fonts.googleapis.com" not in miniapp_page
+    assert 'document.body.dataset.mode = "dark"' in miniapp_js
+    assert 'wa.onEvent("themeChanged"' not in miniapp_js
     assert "Подключить доступ" in gateway_page
     assert "Открыть Telegram-бота" in gateway_page
     assert "Привычный интернет<br />и помощь рядом" in gateway_page

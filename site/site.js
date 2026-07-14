@@ -202,11 +202,7 @@
   }
 
   function applyTheme(cfg) {
-    var stored = null;
-    try { stored = localStorage.getItem("site_mode"); } catch (error) {}
-    var preferred = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    var mode = params.get("mode") || stored || preferred;
-    document.body.dataset.mode = mode === "dark" ? "dark" : "light";
+    document.body.dataset.mode = "dark";
     var accent = params.get("accent") || cfg.accent_color;
     if (accent && /^#[0-9a-fA-F]{6}$/.test(accent)) document.documentElement.style.setProperty("--brand", accent);
   }
@@ -239,12 +235,6 @@
     renderFeatures(cfg);
     renderFaq(cfg);
   }
-
-  $("#themeToggle").addEventListener("click", function () {
-    var next = document.body.dataset.mode === "dark" ? "light" : "dark";
-    document.body.dataset.mode = next;
-    try { localStorage.setItem("site_mode", next); } catch (error) {}
-  });
 
   fetch("/api/cabinet/public/landing")
     .then(function (response) { return response.ok ? response.json() : Promise.reject(); })

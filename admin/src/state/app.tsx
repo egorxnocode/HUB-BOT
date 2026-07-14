@@ -16,8 +16,7 @@ import { DICTS, type Dict, type Lang } from "../i18n";
 type Confirm = { text: string; resolve: (ok: boolean) => void };
 
 interface AppState {
-  theme: "dark" | "light";
-  setTheme: (t: "dark" | "light") => void;
+  theme: "dark";
   lang: Lang;
   setLang: (l: Lang) => void;
   t: Dict;
@@ -28,22 +27,17 @@ interface AppState {
 const Ctx = createContext<AppState | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [theme, setThemeRaw] = useState<"dark" | "light">(
-    (localStorage.getItem("theme") as "dark" | "light") || "dark",
-  );
+  const theme = "dark" as const;
   const [lang, setLangRaw] = useState<Lang>((localStorage.getItem("lang") as Lang) || "ru");
   const [toasts, setToasts] = useState<{ id: number; msg: string }[]>([]);
   const [confirmState, setConfirmState] = useState<Confirm | null>(null);
   const idRef = useRef(1);
 
   useEffect(() => {
-    document.body.dataset.theme = theme;
-  }, [theme]);
-
-  const setTheme = useCallback((t: "dark" | "light") => {
-    localStorage.setItem("theme", t);
-    setThemeRaw(t);
+    document.body.dataset.theme = "dark";
+    localStorage.removeItem("theme");
   }, []);
+
   const setLang = useCallback((l: Lang) => {
     localStorage.setItem("lang", l);
     setLangRaw(l);
@@ -64,8 +58,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo(
-    () => ({ theme, setTheme, lang, setLang, t: DICTS[lang], toast, confirm }),
-    [theme, setTheme, lang, setLang, toast, confirm],
+    () => ({ theme, lang, setLang, t: DICTS[lang], toast, confirm }),
+    [lang, setLang, toast, confirm],
   );
 
   const t = DICTS[lang];

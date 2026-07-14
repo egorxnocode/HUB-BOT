@@ -3,36 +3,21 @@ html { scroll-behavior: smooth; }
 html, body { margin: 0; padding: 0; }
 
 :root {
-  --brand: #2ebb9a;
-  --brand-deep: #147c68;
+  --brand: #48d7b4;
+  --brand-deep: #20a888;
   --brand-ink: #072a23;
-  --sky: #78a9ff;
-  --warm: #ffb86b;
-  --bg: #f5f6f1;
-  --surface: #ffffff;
-  --surface-soft: #ecefe8;
-  --ink: #12201c;
-  --muted: #66716d;
-  --line: #dce1da;
-  --shadow: 0 24px 70px rgba(20, 45, 38, .13);
-  --logo-ink: #ffffff;
-  --radius: 22px;
-  --font: "Onest", "SF Pro Text", "Segoe UI", Arial, sans-serif;
-}
-
-body[data-mode="dark"] {
+  --sky: #6d9df5;
+  --warm: #efa75f;
   --bg: #0f1815;
   --surface: #17231f;
   --surface-soft: #1d2d27;
   --ink: #f1f6f3;
   --muted: #9eaaa5;
   --line: #2a3b34;
-  --brand: #48d7b4;
-  --brand-deep: #20a888;
-  --brand-ink: #06271f;
-  --sky: #6d9df5;
-  --warm: #efa75f;
   --shadow: 0 24px 70px rgba(0, 0, 0, .3);
+  --logo-ink: #ffffff;
+  --radius: 22px;
+  --font: "Onest", "SF Pro Text", "Segoe UI", Arial, sans-serif;
 }
 
 body {
@@ -69,18 +54,6 @@ button, input, select, textarea { font: inherit; }
 .topnav a, .footer-links a { transition: color .18s ease; }
 .topnav a:hover, .footer-links a:hover { color: var(--ink); }
 .top-actions { display: flex; align-items: center; gap: 8px; }
-.theme-button {
-  width: 40px;
-  height: 40px;
-  display: grid;
-  place-items: center;
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--surface);
-  color: var(--ink);
-  cursor: pointer;
-}
-
 .button {
   min-height: 48px;
   display: inline-flex;

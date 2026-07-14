@@ -248,13 +248,21 @@
     const sections = { status: [], plans: [], referral: [], proxy: [], custom: customItems("home") };
     const frag = sections.status;
 
+    frag.push(
+      el("div", { class: "home-intro fade" }, [
+        el("span", { class: "home-eyebrow", text: "Личный кабинет" }),
+        el("h1", { text: `${T === RU ? "Здравствуйте" : "Hello"}, ${me && me.user.first_name ? me.user.first_name : T === RU ? "друг" : "friend"}` }),
+        el("p", { text: T === RU ? "Всё о подписке и подключении — в одном месте." : "Your subscription and connection in one place." }),
+      ]),
+    );
+
     // Owner greeting (from admin config) — shown once at the very top of Home.
     const greeting = me && me.app && me.app.greeting;
     if (greeting) frag.push(el("div", { class: "card fade", text: greeting }));
 
     // status card
     frag.push(
-      el("div", { class: "card fade" }, [
+      el("div", { class: "card fade status-card" }, [
         el("div", { class: "row spread" }, [
           el("span", { class: "row", style: "gap:7px" }, [
             el("span", { class: `dot${usable ? "" : " off"}` }),
@@ -294,7 +302,7 @@
         const total = per.price_minor + pack.price_minor;
         const stars = Math.max(1, Math.ceil(total / Math.max(1, c.stars_rate || 1)));
         frag.push(
-          el("div", { class: "card fade" }, [
+          el("div", { class: "card fade plans-card" }, [
             el("div", { class: "h-cap", text: T.period }),
             el(
               "div",
@@ -355,7 +363,7 @@
       const sel = durs[selIdx];
       const base = durs[0] ? durs[0].price_minor / durs[0].days : 0;
       frag.push(
-        el("div", { class: "card fade" }, [
+        el("div", { class: "card fade plans-card" }, [
           el("div", { class: "h-cap", text: T.choosePlan }),
           allPlans.length > 1
             ? el(
@@ -407,7 +415,7 @@
       const frag = sections.referral;
       const r = state.referral;
       frag.push(
-        el("div", { class: "card fade row spread" }, [
+        el("div", { class: "card fade row spread referral-card" }, [
           el("div", {}, [
             el("b", { text: "🎁 " + T.refTitle }),
             el("div", { class: "sub", style: "font-size:12.5px;margin-top:3px", text: T.refText(r.bonus_days) }),
@@ -794,6 +802,7 @@
       // ?title=/?greeting= let the admin preview override the (mock) config.
       const title = params.get("title") || me.app.title;
       if (title) document.title = title;
+      $("#appAvatar").textContent = (me.user.first_name || "Н").slice(0, 1).toUpperCase();
       if (params.get("greeting") != null) me.app.greeting = params.get("greeting");
       // theme from admin config (?variant= wins for preview)
       const NAMES = { minimal: "a", private: "b", buddy: "c", native: "d",
@@ -826,15 +835,14 @@
       wa.expand();
     } catch {}
   }
-  const scheme = params.get("mode") || (wa && wa.colorScheme) || "light";
-  document.body.dataset.mode = scheme === "dark" ? "dark" : "light";
-  if (wa && wa.onEvent) wa.onEvent("themeChanged", () => (document.body.dataset.mode = wa.colorScheme));
+  document.body.dataset.mode = "dark";
 
   document.querySelectorAll(".tabs button").forEach((b) => {
     b.addEventListener("click", () => {
       state.tab = b.dataset.tab;
       haptic();
       render();
+      window.scrollTo({ top: 0, behavior: "auto" });
       if (state.tab === "connect" && !state.connection && mock) state.connection = window.__MOCK__.connection, render();
     });
   });
