@@ -85,6 +85,7 @@ type Config = {
   ui_button_keys: string[];
   ui_sections: string[];
   ui_screens: string[];
+  remnawave_catalog_url: string;
 };
 
 const BTN_LABELS: Record<string, string> = {
@@ -727,6 +728,9 @@ export default function Miniapp() {
                 </div>
                 <div className="dim" style={{ fontSize: 12, marginBottom: 12 }}>
                   Один каталог используется ботом, Mini App и браузерным кабинетом. В шаблоне импорта оставьте <span className="mono">{"{{SUBSCRIPTION_LINK}}"}</span> или <span className="mono">{"{{SUBSCRIPTION_LINK_ENCODED}}"}</span>.
+                </div>
+                <div className="input mono" style={{ marginBottom: 12, fontSize: 11 }}>
+                  {`${window.location.origin}${cfg.remnawave_catalog_url}`}
                 </div>
                 <div className="grid" style={{ gap: 14 }}>
                   {Object.entries(CONNECTION_PLATFORM_LABELS).map(([platform, label]) => (

@@ -20,6 +20,7 @@ from src.application.dto.pricing import PurchaseRequest
 from src.application.events import UserRegistered
 from src.application.services.connection import (
     build_deep_links,
+    build_remnawave_page_config,
     materialize_connection_catalog,
 )
 from src.application.services.ids import generate_referral_code
@@ -337,6 +338,20 @@ async def public_landing(container: AppContainer = Depends(get_container)) -> di
         "currency": "RUB",
         "plans": await _plan_items(container),
     }
+
+
+@router.get("/public/connection-apps/remnawave")
+async def public_remnawave_connection_apps(
+    container: AppContainer = Depends(get_container),
+) -> dict[str, Any]:
+    """Live non-secret app-config URL for Remnawave Subscription Page.
+
+    Point the subscription-page app config at this route once; future catalogue edits
+    in HUB-BOT Admin then become visible there without copying another JSON file.
+    """
+    async with container.uow() as uow:
+        miniapp = await uow.miniapp.get_or_create()
+    return build_remnawave_page_config(miniapp.ui)
 
 
 @router.get("/constructor")

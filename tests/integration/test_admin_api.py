@@ -808,6 +808,9 @@ async def test_cabinet_purchase_with_balance(
         "Happ",
         "INCY",
     ]
+    live_catalog = await http.get("/api/cabinet/public/connection-apps/remnawave")
+    assert live_catalog.status_code == 200
+    assert live_catalog.json() == exported.json()
 
 
 async def test_cabinet_purchase_insufficient_balance(
