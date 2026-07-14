@@ -450,9 +450,13 @@ async def test_public_landing_telegram_gateway_is_independent_from_bot_button(
     miniapp_js = (await http.get("/app/app.js")).text
     assert 'data-mode="dark"' in miniapp_page
     assert 'class="app-brand"' in miniapp_page
+    assert "assets/nasvyazi-logo.png" in miniapp_page
     assert "fonts.googleapis.com" not in miniapp_page
     assert 'document.body.dataset.mode = "dark"' in miniapp_js
     assert 'wa.onEvent("themeChanged"' not in miniapp_js
+    miniapp_logo = await http.get("/app/assets/nasvyazi-logo.png")
+    assert miniapp_logo.status_code == 200
+    assert miniapp_logo.headers["content-type"] == "image/png"
     assert "Подключить доступ" in gateway_page
     assert "Открыть Telegram-бота" in gateway_page
     assert "Привычный интернет<br />и помощь рядом" in gateway_page
