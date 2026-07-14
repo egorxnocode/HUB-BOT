@@ -93,9 +93,29 @@ function detectedPlatform() {
   return "windows";
 }
 
+function copyIconButton(value) {
+  return el("button", {
+    class: "icon-button", title: "Скопировать", "aria-label": "Скопировать ссылку",
+    html: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>',
+    onclick: async () => {
+      try { await navigator.clipboard.writeText(value); toast("Ссылка скопирована"); }
+      catch { toast("Не удалось скопировать ссылку"); }
+    },
+  });
+}
+
+function qrPanel(value) {
+  const target = el("div", { class: "qr-target" });
+  queueMicrotask(() => {
+    if (!target.isConnected || !window.QRCode) return;
+    new window.QRCode(target, { text: value, width: 216, height: 216, colorDark: "#07110e", colorLight: "#ffffff", correctLevel: window.QRCode.CorrectLevel.M });
+  });
+  return el("div", { class: "qr-panel" }, [target, el("p", {}, "Отсканируйте камерой или приложением на другом устройстве")]);
+}
+
 async function connectionCenter() {
   const conn = await api("GET", `${C}/connection`, null, true);
-  const state = { platform: detectedPlatform(), app: null, pair: null };
+  const state = { platform: detectedPlatform(), app: null, pair: null, qrOpen: false };
   const root = el("div", { class: "card connect-center" });
   function draw() {
     root.innerHTML = "";
@@ -107,16 +127,17 @@ async function connectionCenter() {
     root.append(el("div", { class: "cap" }, "Центр подключения"));
     root.append(el("h2", {}, "Добавить устройство"));
     root.append(el("div", { class: "hint" }, "Устройство определено автоматически. При необходимости выберите другое."));
-    const deviceRow = el("div", { class: "device-row" });
-    platforms.forEach((p) => deviceRow.append(el("button", {
-      class: `device-pill${p.id === platform.id ? " on" : ""}`,
-      onclick: () => { state.platform = p.id; state.app = null; state.pair = null; draw(); },
-    }, p.label)));
-    root.append(deviceRow);
+    root.append(el("details", { class: "device-picker" }, [
+      el("summary", {}, [el("span", {}, "Устройство"), el("b", {}, platform.label), el("i", {}, "⌄")]),
+      el("div", { class: "device-options" }, platforms.map((p) => el("button", {
+        class: p.id === platform.id ? "on" : "",
+        onclick: () => { state.platform = p.id; state.app = null; state.pair = null; state.qrOpen = false; draw(); },
+      }, p.label))),
+    ]));
     const apps = el("div", { class: "connect-apps" });
     platform.apps.forEach((a) => apps.append(el("button", {
       class: `connect-app${a.id === state.app ? " on" : ""}`,
-      onclick: () => { state.app = a.id; state.pair = null; draw(); },
+      onclick: () => { state.app = a.id; state.pair = null; state.qrOpen = false; draw(); },
     }, [
       a.icon_url ? el("img", { src: a.icon_url, alt: "" }) : el("span", { class: "connect-letter" }, a.name.slice(0, 1)),
       el("span", {}, [el("b", {}, a.name), el("small", {}, platform.label)]),
@@ -140,9 +161,11 @@ async function connectionCenter() {
       guide.append(el("button", { class: "btn ghost", onclick: () => window.open(selected.tv_help_url, "_blank", "noopener") }, "Инструкция для телевизора"));
       guide.append(el("div", { class: "hint" }, "Или отсканируйте QR с экрана телевизора мобильным Happ — оба устройства должны быть в одной Wi-Fi сети."));
     } else {
-      guide.append(el("button", { class: "btn primary", onclick: () => { location.href = selected.import_url; } }, "Добавить подписку"));
+      guide.append(el("a", { class: "btn primary import-link", href: selected.import_url }, "Добавить подписку"));
     }
-    if (!conn.hide_link) guide.append(el("button", { class: "btn link-btn", onclick: () => { navigator.clipboard.writeText(conn.subscription_url); toast("Ссылка скопирована"); } }, "Скопировать ссылку вручную"));
+    guide.append(el("div", { class: "subscription-link" }, [el("code", {}, conn.subscription_url), copyIconButton(conn.subscription_url)]));
+    guide.append(el("button", { class: "btn qr-button", onclick: () => { state.qrOpen = !state.qrOpen; draw(); } }, state.qrOpen ? "Скрыть QR-код" : "Показать QR-код"));
+    if (state.qrOpen) guide.append(qrPanel(conn.subscription_url));
     root.append(guide);
   }
   draw();
