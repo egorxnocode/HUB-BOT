@@ -141,7 +141,20 @@ body[data-variant][data-mode="dark"] .btn.primary {
 .status-connect { min-height: 48px; border-radius: 15px; background: var(--acc); color: var(--accInk); font-size: 13px; font-weight: 800; }
 .plans-card { padding: 18px; display: grid; gap: 16px; overflow: hidden; background: radial-gradient(circle at 105% -5%, rgba(109,157,245,.11), transparent 42%), linear-gradient(160deg, rgba(22,38,32,.98), rgba(10,18,15,.99)); }
 .plans-card .h-cap { color: var(--acc); font-weight: 800; }
-.referral-card { min-height: 104px; padding: 20px 22px; background: radial-gradient(circle at 90% 10%, rgba(109,157,245,.14), transparent 48%), var(--card); }
+.referral-card { position: relative; min-height: 190px; padding: 20px; display: grid; gap: 18px; overflow: hidden; background: radial-gradient(circle at 100% 0, rgba(109,157,245,.22), transparent 47%), radial-gradient(circle at 0 100%, rgba(72,215,180,.12), transparent 42%), linear-gradient(150deg, rgba(22,38,32,.98), rgba(11,19,16,.99)); }
+.referral-card::after { content: ""; position: absolute; width: 120px; height: 120px; right: -52px; top: -54px; border: 1px solid rgba(255,255,255,.07); border-radius: 38px; transform: rotate(28deg); }
+.referral-card > * { position: relative; z-index: 1; }
+.referral-head { display: grid; grid-template-columns: minmax(0,1fr) 76px; align-items: center; gap: 16px; }
+.referral-copy { min-width: 0; }
+.referral-copy h3 { margin: 7px 0 5px; font-size: 20px; line-height: 1.12; letter-spacing: -.03em; }
+.referral-copy p { max-width: 285px; margin: 0; color: var(--sub); font-size: 12px; line-height: 1.45; }
+.referral-reward { width: 76px; height: 76px; display: grid; align-content: center; justify-items: center; border: 1px solid rgba(72,215,180,.35); border-radius: 24px; background: linear-gradient(145deg, rgba(72,215,180,.18), rgba(72,215,180,.05)); box-shadow: 0 16px 40px rgba(0,0,0,.16); }
+.referral-reward strong { color: var(--acc); font-size: 25px; line-height: 1; letter-spacing: -.05em; }
+.referral-reward small { margin-top: 4px; color: var(--sub); font-size: 9px; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; }
+.referral-share { width: 100%; min-height: 49px; padding: 0 13px 0 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid rgba(72,215,180,.28); border-radius: 15px; background: rgba(72,215,180,.09); color: var(--ink); font: 760 13px/1 var(--font); cursor: pointer; }
+.referral-share:active { transform: translateY(1px); }
+.referral-arrow { width: 31px; height: 31px; display: grid; place-items: center; border-radius: 10px; background: var(--acc); color: var(--accInk); }
+.referral-arrow svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .h-cap {
   font-size: 11px;
   letter-spacing: 0.08em;

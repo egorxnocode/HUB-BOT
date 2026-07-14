@@ -427,25 +427,33 @@
     }
 
     // referral
-    if (state.referral) {
+    if (usable && state.referral) {
       const frag = sections.referral;
       const r = state.referral;
       frag.push(
-        el("div", { class: "card fade row spread referral-card" }, [
-          el("div", {}, [
-            el("b", { text: "🎁 " + T.refTitle }),
-            el("div", { class: "sub", style: "font-size:12.5px;margin-top:3px", text: T.refText(r.bonus_days) }),
+        el("div", { class: "card fade referral-card" }, [
+          el("div", { class: "referral-head" }, [
+            el("div", { class: "referral-copy" }, [
+              el("span", { class: "home-eyebrow", text: T === RU ? "Бонус за приглашение" : "Invite bonus" }),
+              el("h3", { text: T.refTitle }),
+              el("p", { text: T === RU ? "Отправьте персональную ссылку — бонус получат оба." : "Share your personal link — both of you get a bonus." }),
+            ]),
+            el("div", { class: "referral-reward" }, [
+              el("strong", { text: `+${r.bonus_days}` }),
+              el("small", { text: T === RU ? "дней" : "days" }),
+            ]),
           ]),
           el("button", {
-            class: "btn primary sm",
-            style: btnStyle("share"),
+            class: "referral-share",
             onclick: () => {
               haptic();
               const url = `https://t.me/share/url?url=${encodeURIComponent(r.link)}`;
               wa && wa.openTelegramLink ? wa.openTelegramLink(url) : window.open(url);
             },
-            text: btnText("share", T.share),
-          }),
+          }, [
+            el("span", { text: btnText("share", T === RU ? "Пригласить друга" : "Invite a friend") }),
+            el("span", { class: "referral-arrow", html: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>' }),
+          ]),
         ]),
       );
     }
