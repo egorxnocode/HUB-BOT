@@ -164,8 +164,8 @@ async function connectionCenter() {
       guide.append(el("a", { class: "btn primary import-link", href: selected.import_url }, "Добавить подписку"));
     }
     guide.append(el("div", { class: "subscription-link" }, [el("code", {}, conn.subscription_url), copyIconButton(conn.subscription_url)]));
-    guide.append(el("button", { class: "btn qr-button", onclick: () => { state.qrOpen = !state.qrOpen; draw(); } }, state.qrOpen ? "Скрыть QR-код" : "Показать QR-код"));
-    if (state.qrOpen) guide.append(qrPanel(conn.subscription_url));
+    guide.append(el("button", { class: "btn qr-button", onclick: () => { state.qrOpen = !state.qrOpen; draw(); } }, state.qrOpen ? "Скрыть QR-код" : `QR-код для ${selected.name}`));
+    if (state.qrOpen) guide.append(qrPanel(selected.import_url));
     root.append(guide);
   }
   draw();

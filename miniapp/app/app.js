@@ -540,8 +540,8 @@
         el("button", { class: "btn ghost", onclick: () => (wa && wa.openLink ? wa.openLink(selected.tv_help_url) : window.open(selected.tv_help_url)), text: T === RU ? "Инструкция для телевизора" : "TV instructions" }),
       ]) : el("a", { class: "btn primary import-link", href: selected.import_url, onclick: () => haptic() }, [T === RU ? "Добавить подписку" : "Add subscription"]),
       el("div", { class: "subscription-link" }, [el("code", { text: conn.subscription_url }), copyIconButton(conn.subscription_url)]),
-      el("button", { class: "btn qr-button", onclick: () => { state.qrOpen = !state.qrOpen; render(); }, text: state.qrOpen ? (T === RU ? "Скрыть QR-код" : "Hide QR code") : (T === RU ? "Показать QR-код" : "Show QR code") }),
-      state.qrOpen ? qrPanel(conn.subscription_url) : null,
+      el("button", { class: "btn qr-button", onclick: () => { state.qrOpen = !state.qrOpen; render(); }, text: state.qrOpen ? (T === RU ? "Скрыть QR-код" : "Hide QR code") : (T === RU ? `QR-код для ${selected.name}` : `QR code for ${selected.name}`) }),
+      state.qrOpen ? qrPanel(selected.import_url) : null,
     ].filter(Boolean)));
     return frag.concat(customItems("connect"));
   }
