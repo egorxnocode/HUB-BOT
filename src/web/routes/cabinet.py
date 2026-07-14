@@ -18,7 +18,10 @@ from pydantic import BaseModel, Field
 from src.application.common.payments import PaymentContext, PaymentResultKind
 from src.application.dto.pricing import PurchaseRequest
 from src.application.events import UserRegistered
-from src.application.services.connection import build_deep_links
+from src.application.services.connection import (
+    build_deep_links,
+    materialize_connection_catalog,
+)
 from src.application.services.ids import generate_referral_code
 from src.application.services.promo import PromoError
 from src.core.enums import Currency, Locale, PurchaseType, UserStatus
@@ -731,6 +734,7 @@ async def connection(
             else None
         )
         hide_link = bool(await container.bot_config.value(uow, "HIDE_SUBSCRIPTION_LINK"))
+        miniapp = await uow.miniapp.get_or_create()
     if sub is None or not sub.status.is_usable or not sub.subscription_url:
         raise HTTPException(404, "no active subscription")
     url = sub.subscription_url
@@ -740,6 +744,7 @@ async def connection(
         "subscription_url": None if hide_link else url,
         "expires_at": sub.expire_at.isoformat() if sub.expire_at else None,
         "deep_links": build_deep_links(url, sub.crypto_link),
+        "platforms": materialize_connection_catalog(miniapp.ui, url, sub.crypto_link),
         "hide_link": hide_link,
     }
 

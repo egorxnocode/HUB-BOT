@@ -8,6 +8,11 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field, field_validator
 
+from src.application.services.connection import (
+    build_remnawave_page_config,
+    clean_connection_catalog,
+    effective_connection_catalog,
+)
 from src.infrastructure.di import AppContainer
 from src.web.deps import get_container
 from src.web.routes.admin._common import audit, iso
@@ -153,6 +158,8 @@ def _clean_landing(raw: Any) -> dict[str, Any] | None:
 
 
 def _serialize(cfg: Any) -> dict[str, Any]:
+    ui = dict(cfg.ui or {})
+    ui["connection_apps"] = effective_connection_catalog(ui)
     return {
         "template": cfg.template,
         "title": cfg.title,
@@ -160,7 +167,7 @@ def _serialize(cfg: Any) -> dict[str, Any]:
         "accent_color": cfg.accent_color,
         "photo_scale_pct": cfg.photo_scale_pct,
         "cover_path": cfg.cover_path,
-        "ui": cfg.ui or {},
+        "ui": ui,
         "published_at": iso(cfg.published_at),
         "templates": list(KNOWN_TEMPLATES),
         "ui_button_keys": list(UI_BUTTON_KEYS),
@@ -218,6 +225,8 @@ class MiniappPatch(BaseModel):
         landing = _clean_landing(v.get("landing"))
         if landing is not None:
             out["landing"] = landing
+        if "connection_apps" in v:
+            out["connection_apps"] = clean_connection_catalog(v.get("connection_apps"))
         return out
 
     @field_validator("template")
@@ -266,3 +275,14 @@ async def publish_miniapp(
         await audit(uow, identity, "miniapp.publish", None, template=cfg.template)
         await uow.commit()
         return _serialize(cfg)
+
+
+@router.get("/connection-apps/remnawave")
+async def export_remnawave_connection_apps(
+    _identity: AdminIdentity = Depends(require_admin),
+    container: AppContainer = Depends(get_container),
+) -> dict[str, Any]:
+    """Export the live catalogue for Remnawave Subscription Page app-config.json."""
+    async with container.uow() as uow:
+        cfg = await uow.miniapp.get_or_create()
+    return build_remnawave_page_config(cfg.ui)

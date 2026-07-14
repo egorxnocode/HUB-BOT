@@ -83,3 +83,23 @@ input:focus { border-color: var(--acc); }
 #toast.show { opacity: 1; }
 .center { text-align: center; }
 .link { color: var(--acc); cursor: pointer; }
+.connect-center { overflow: hidden; background: radial-gradient(circle at 100% 0, rgba(120,169,255,.13), transparent 42%), var(--card); }
+.connect-center h2 { margin-bottom: 4px; font-size: 24px; }
+.device-row { display: flex; gap: 7px; overflow-x: auto; margin: 16px -2px 12px; padding: 2px; scrollbar-width: none; }
+.device-row::-webkit-scrollbar { display: none; }
+.device-pill { flex: 0 0 auto; min-height: 36px; padding: 0 13px; border: 1px solid var(--line); border-radius: 999px; background: var(--card2); color: var(--dim); cursor: pointer; }
+.device-pill.on { border-color: var(--acc); background: rgba(72,215,180,.1); color: var(--fg); }
+.connect-apps { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; }
+.connect-app { min-height: 66px; padding: 10px; display: flex; align-items: center; gap: 10px; border: 1px solid var(--line); border-radius: 13px; background: var(--card2); color: var(--fg); text-align: left; cursor: pointer; }
+.connect-app.on { border-color: var(--acc); background: rgba(72,215,180,.09); }
+.connect-app img, .connect-letter { width: 38px; height: 38px; flex: 0 0 auto; border-radius: 11px; object-fit: cover; }
+.connect-letter { display: grid; place-items: center; background: linear-gradient(145deg,#78a9ff,#48d7b4); color: #071511; font-weight: 800; }
+.connect-app > span:last-child { display: grid; gap: 2px; min-width: 0; }
+.connect-app small { color: var(--dim); font-size: 10px; }
+.connect-guide { margin-top: 12px; padding: 16px; border: 1px solid rgba(72,215,180,.25); border-radius: 15px; background: rgba(7,18,15,.55); }
+.connect-guide h3 { margin: 0 0 6px; font-size: 18px; }
+.connect-guide p { margin: 0 0 6px; color: var(--dim); font-size: 13px; line-height: 1.45; }
+.link-btn { background: transparent; color: var(--dim); padding: 8px; font-size: 12px; }
+.pair-code { margin-top: 12px; padding: 15px; display: grid; justify-items: center; gap: 4px; border: 1px solid rgba(72,215,180,.28); border-radius: 13px; background: rgba(72,215,180,.08); }
+.pair-code small, .pair-code span { color: var(--dim); font-size: 11px; }
+.pair-code strong { font: 800 29px/1.1 ui-monospace,monospace; letter-spacing: .12em; }

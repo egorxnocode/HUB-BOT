@@ -463,7 +463,8 @@ async def test_public_landing_telegram_gateway_is_independent_from_bot_button(
     assert 'document.body.dataset.mode = "dark"' in miniapp_js
     assert 'wa.onEvent("themeChanged"' not in miniapp_js
     assert "step-num" not in miniapp_js
-    assert 'class: "step-icon"' in miniapp_js
+    assert 'class: "device-switch fade"' in miniapp_js
+    assert "class: `app-choice" in miniapp_js
     assert 'class: "legal-link"' in miniapp_js
     miniapp_logo = await http.get("/app/assets/nasvyazi-logo.png")
     assert miniapp_logo.status_code == 200
@@ -797,6 +798,16 @@ async def test_cabinet_purchase_with_balance(
     res = await http.get("/api/cabinet/connection", headers=tma)
     assert res.status_code == 200
     assert res.json()["subscription_url"]
+    platforms = {item["id"]: item for item in res.json()["platforms"]}
+    assert [app["name"] for app in platforms["ios"]["apps"]] == ["Happ", "INCY"]
+    assert platforms["android_tv"]["apps"][0]["tv_web_import_url"] == "https://tv.happ.su"
+
+    exported = await http.get("/api/admin/miniapp/connection-apps/remnawave", headers=auth)
+    assert exported.status_code == 200
+    assert [app["name"] for app in exported.json()["platforms"]["ios"]["apps"]] == [
+        "Happ",
+        "INCY",
+    ]
 
 
 async def test_cabinet_purchase_insufficient_balance(

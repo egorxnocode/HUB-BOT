@@ -55,6 +55,14 @@ type UiLanding = {
   features?: UiFeature[];
   faq?: UiFaq[];
 };
+type UiConnectionApp = {
+  id: string;
+  name: string;
+  icon_url: string;
+  download_url: string;
+  import_template: string;
+  instruction: string;
+};
 type UiConf = {
   scale?: number;
   sections?: string[];
@@ -63,6 +71,7 @@ type UiConf = {
   blocks?: UiBlock[];
   buttons_extra?: UiButtonExtra[];
   landing?: UiLanding;
+  connection_apps?: Record<string, UiConnectionApp[]>;
 };
 type Config = {
   template: string;
@@ -97,6 +106,14 @@ const SCREEN_LABELS: Record<string, string> = {
   home: "Главная",
   connect: "Подключение",
   account: "Кабинет",
+};
+const CONNECTION_PLATFORM_LABELS: Record<string, string> = {
+  ios: "iPhone / iPad",
+  android: "Android",
+  windows: "Windows",
+  macos: "macOS",
+  android_tv: "Android TV",
+  apple_tv: "Apple TV",
 };
 
 let _cid = 0;
@@ -310,6 +327,55 @@ export default function Miniapp() {
   }
   function removeFaq(i: number) {
     patchLanding({ faq: (cfg?.ui.landing?.faq ?? []).filter((_, j) => j !== i) });
+  }
+
+  function patchConnectionApp(platform: string, index: number, field: keyof UiConnectionApp, value: string) {
+    setCfg((c) => {
+      if (!c) return c;
+      const connection_apps = { ...(c.ui.connection_apps ?? {}) };
+      const apps = [...(connection_apps[platform] ?? [])];
+      apps[index] = { ...apps[index], [field]: value };
+      connection_apps[platform] = apps;
+      return { ...c, ui: { ...c.ui, connection_apps } };
+    });
+    setDirty(true);
+  }
+
+  function addConnectionApp(platform: string) {
+    const apps = cfg?.ui.connection_apps?.[platform] ?? [];
+    if (apps.length >= 4) return;
+    patchUi({
+      connection_apps: {
+        ...(cfg?.ui.connection_apps ?? {}),
+        [platform]: [...apps, { id: newId(platform), name: "", icon_url: "", download_url: "", import_template: "happ://add/{{SUBSCRIPTION_LINK}}", instruction: "" }],
+      },
+    });
+  }
+
+  function removeConnectionApp(platform: string, index: number) {
+    patchUi({
+      connection_apps: {
+        ...(cfg?.ui.connection_apps ?? {}),
+        [platform]: (cfg?.ui.connection_apps?.[platform] ?? []).filter((_, i) => i !== index),
+      },
+    });
+  }
+
+  async function downloadRemnawaveConfig() {
+    try {
+      if (dirty) await save(false);
+      const payload = await api.get<Record<string, unknown>>("/api/admin/miniapp/connection-apps/remnawave");
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "nasvyazi-remnawave-app-config.json";
+      link.click();
+      URL.revokeObjectURL(url);
+      toast("Конфиг Remnawave скачан");
+    } catch (e) {
+      toast((e as Error).message);
+    }
   }
 
   async function save(publish = false) {
@@ -650,6 +716,41 @@ export default function Miniapp() {
                   {!(cfg.ui.buttons_extra ?? []).length && (
                     <div className="dim" style={{ fontSize: 12 }}>{t.customButtonsHint}</div>
                   )}
+                </div>
+              </div>
+
+              {/* public marketing site (served at /) — same theme, own copy */}
+              <div style={{ borderTop: "1px solid var(--border)", paddingTop: 14 }}>
+                <div className="row spread" style={{ marginBottom: 5 }}>
+                  <div className="caps">📱 Приложения и подключение</div>
+                  <button className="btn secondary sm" onClick={() => void downloadRemnawaveConfig()}>Скачать для Remnawave</button>
+                </div>
+                <div className="dim" style={{ fontSize: 12, marginBottom: 12 }}>
+                  Один каталог используется ботом, Mini App и браузерным кабинетом. В шаблоне импорта оставьте <span className="mono">{"{{SUBSCRIPTION_LINK}}"}</span> или <span className="mono">{"{{SUBSCRIPTION_LINK_ENCODED}}"}</span>.
+                </div>
+                <div className="grid" style={{ gap: 14 }}>
+                  {Object.entries(CONNECTION_PLATFORM_LABELS).map(([platform, label]) => (
+                    <div key={platform} className="card" style={{ padding: 12, background: "var(--panel2, var(--panel))" }}>
+                      <div className="row spread" style={{ marginBottom: 9 }}>
+                        <b style={{ fontSize: 13 }}>{label}</b>
+                        <button className="btn secondary sm" onClick={() => addConnectionApp(platform)}>+ Приложение</button>
+                      </div>
+                      <div className="grid" style={{ gap: 10 }}>
+                        {(cfg.ui.connection_apps?.[platform] ?? []).map((app, index) => (
+                          <div key={app.id} style={{ display: "grid", gap: 6, paddingTop: index ? 10 : 0, borderTop: index ? "1px solid var(--border)" : 0 }}>
+                            <div className="row" style={{ gap: 6 }}>
+                              <input className="input" style={{ flex: 1 }} placeholder="Happ / INCY" value={app.name} maxLength={40} onChange={(e) => patchConnectionApp(platform, index, "name", e.target.value)} />
+                              <button className="btn danger sm" title="Удалить" onClick={() => removeConnectionApp(platform, index)}>✕</button>
+                            </div>
+                            <input className="input mono" placeholder="URL иконки https://…" value={app.icon_url} onChange={(e) => patchConnectionApp(platform, index, "icon_url", e.target.value)} />
+                            <input className="input mono" placeholder="Ссылка на скачивание https://…" value={app.download_url} onChange={(e) => patchConnectionApp(platform, index, "download_url", e.target.value)} />
+                            <input className="input mono" placeholder="happ://add/{{SUBSCRIPTION_LINK}}" value={app.import_template} onChange={(e) => patchConnectionApp(platform, index, "import_template", e.target.value)} />
+                            <textarea className="input" style={{ minHeight: 54, resize: "vertical" }} placeholder="Короткая инструкция пользователю" value={app.instruction} maxLength={500} onChange={(e) => patchConnectionApp(platform, index, "instruction", e.target.value)} />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 

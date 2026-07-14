@@ -86,6 +86,69 @@ function brand() {
   ]);
 }
 
+function detectedPlatform() {
+  if (/iPhone|iPad/i.test(navigator.userAgent)) return "ios";
+  if (/Android/i.test(navigator.userAgent)) return "android";
+  if (/Mac/i.test(navigator.userAgent)) return "macos";
+  return "windows";
+}
+
+async function connectionCenter() {
+  const conn = await api("GET", `${C}/connection`, null, true);
+  const state = { platform: detectedPlatform(), app: null, pair: null };
+  const root = el("div", { class: "card connect-center" });
+  function draw() {
+    root.innerHTML = "";
+    const platforms = conn.platforms || [];
+    const platform = platforms.find((p) => p.id === state.platform) || platforms[0];
+    if (!platform) return;
+    if (!platform.apps.some((a) => a.id === state.app)) state.app = platform.apps[0] && platform.apps[0].id;
+    const selected = platform.apps.find((a) => a.id === state.app);
+    root.append(el("div", { class: "cap" }, "Центр подключения"));
+    root.append(el("h2", {}, "Добавить устройство"));
+    root.append(el("div", { class: "hint" }, "Устройство определено автоматически. При необходимости выберите другое."));
+    const deviceRow = el("div", { class: "device-row" });
+    platforms.forEach((p) => deviceRow.append(el("button", {
+      class: `device-pill${p.id === platform.id ? " on" : ""}`,
+      onclick: () => { state.platform = p.id; state.app = null; state.pair = null; draw(); },
+    }, p.label)));
+    root.append(deviceRow);
+    const apps = el("div", { class: "connect-apps" });
+    platform.apps.forEach((a) => apps.append(el("button", {
+      class: `connect-app${a.id === state.app ? " on" : ""}`,
+      onclick: () => { state.app = a.id; state.pair = null; draw(); },
+    }, [
+      a.icon_url ? el("img", { src: a.icon_url, alt: "" }) : el("span", { class: "connect-letter" }, a.name.slice(0, 1)),
+      el("span", {}, [el("b", {}, a.name), el("small", {}, platform.label)]),
+    ])));
+    root.append(apps);
+    if (!selected) return;
+    const guide = el("div", { class: "connect-guide" }, [
+      el("h3", {}, selected.name),
+      el("p", {}, selected.instruction || "Установите приложение и добавьте подписку."),
+    ]);
+    if (selected.download_url) guide.append(el("button", { class: "btn ghost", onclick: () => window.open(selected.download_url, "_blank", "noopener") }, `Скачать ${selected.name}`));
+    if (platform.tv && selected.tv_web_import_url) {
+      guide.append(el("div", { class: "hint" }, "В Happ на телевизоре откройте «+» → Web Import. Код появится на экране ТВ."));
+      guide.append(el("button", { class: "btn primary", onclick: async () => {
+        try {
+          await navigator.clipboard.writeText(selected.tv_transfer_value);
+          toast("Подписка скопирована");
+          window.open(selected.tv_web_import_url, "_blank", "noopener");
+        } catch { toast("Не удалось скопировать ссылку"); }
+      } }, "Скопировать и открыть Web Import"));
+      guide.append(el("button", { class: "btn ghost", onclick: () => window.open(selected.tv_help_url, "_blank", "noopener") }, "Инструкция для телевизора"));
+      guide.append(el("div", { class: "hint" }, "Или отсканируйте QR с экрана телевизора мобильным Happ — оба устройства должны быть в одной Wi-Fi сети."));
+    } else {
+      guide.append(el("button", { class: "btn primary", onclick: () => { location.href = selected.import_url; } }, "Добавить подписку"));
+    }
+    if (!conn.hide_link) guide.append(el("button", { class: "btn link-btn", onclick: () => { navigator.clipboard.writeText(conn.subscription_url); toast("Ссылка скопирована"); } }, "Скопировать ссылку вручную"));
+    root.append(guide);
+  }
+  draw();
+  return root;
+}
+
 /* ---------- auth screens ---------- */
 
 let authTab = "login";
@@ -268,13 +331,9 @@ async function cabinetView() {
     sub && sub.expire_at ? el("div", { class: "li" }, [el("span", { class: "muted" }, "Действует до"), el("b", {}, new Date(sub.expire_at).toLocaleDateString("ru-RU"))]) : null,
   ]));
 
-  if (usable && sub.subscription_url) {
-    root.append(el("div", { class: "card" }, [
-      el("h2", {}, "Подключение"),
-      el("div", { class: "hint" }, "Вставь ссылку в Happ / v2RayTun / Hiddify:"),
-      el("div", { class: "sublink" }, sub.subscription_url),
-      el("button", { class: "btn ghost", onclick: () => { navigator.clipboard.writeText(sub.subscription_url); toast("Ссылка скопирована"); } }, "Скопировать ссылку"),
-    ]));
+  if (usable) {
+    try { root.append(await connectionCenter()); }
+    catch (e) { root.append(el("div", { class: "card" }, [el("h2", {}, "Подключение"), el("div", { class: "hint" }, "Не удалось загрузить центр подключения.")])); }
   }
 
   const plans = await loadPlans(true);
