@@ -19,8 +19,7 @@
     choosePlan: "Тариф", payMethod: "Оплата", refTitle: "Пригласи друга",
     refText: (d) => `+${d} дней тебе и другу`, share: "Поделиться",
     step1: "Скачай приложение", step1sub: "iOS · Android · macOS · Windows",
-    download: "Скачать", step2: "Получи персональную ссылку",
-    getLink: "Получить ссылку", openApp: "Открыть в приложении", copy: "Скопировать",
+    download: "Скачать", copy: "Скопировать",
     copied: "Скопировано", step3: "Нажми «Подключить» в приложении",
     step3sub: "Приложение импортирует конфиг и включит защиту",
     profile: "Профиль", subscription: "Подписка", devices: "Устройства",
@@ -46,8 +45,7 @@
     choosePlan: "Plan", payMethod: "Payment", refTitle: "Invite a friend",
     refText: (d) => `+${d} days for you and a friend`, share: "Share",
     step1: "Download the app", step1sub: "iOS · Android · macOS · Windows",
-    download: "Download", step2: "Get your personal link",
-    getLink: "Get link", openApp: "Open in app", copy: "Copy", copied: "Copied",
+    download: "Download", copy: "Copy", copied: "Copied",
     step3: "Tap “Connect” in the app",
     step3sub: "The app imports the config and turns protection on",
     profile: "Profile", subscription: "Subscription", devices: "Devices",
@@ -154,7 +152,7 @@
   }
 
   // ---------- state ----------
-  const state = { tab: "home", me: null, plans: null, constructor: null, referral: null, payments: null, connection: null, connectionPlatform: null, connectionApp: null, tvPair: null, tariffSel: 0, planSel: 0, cPerSel: 0, cPackSel: 0, paySel: "stars", devices: undefined };
+  const state = { tab: "home", me: null, plans: null, constructor: null, referral: null, payments: null, connection: null, connectionLoading: false, connectionError: false, connectionPlatform: null, connectionApp: null, qrOpen: false, tvPair: null, tariffSel: 0, planSel: 0, cPerSel: 0, cPackSel: 0, paySel: "stars", devices: undefined };
   // admin overrides: {scale, sections:[order], hidden:[keys], buttons:{key:{text,color}},
   // blocks:[{screen,title,text,icon,url,button_label,color}], buttons_extra:[{screen,label,url,color,style}]}
   let UI = {};
@@ -290,7 +288,7 @@
               ]),
               el("button", {
                 class: "btn status-connect",
-                onclick: () => { state.tab = "connect"; haptic(); render(); },
+                onclick: openConnect,
                 text: T === RU ? "Подключить устройство" : "Connect device",
               }),
             ])
@@ -465,75 +463,86 @@
     return orderSections(sections);
   }
 
+  function copyIconButton(value) {
+    return el("button", {
+      class: "icon-button", title: T.copy, "aria-label": T.copy,
+      html: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>',
+      onclick: async () => { if (await copyText(value)) { toast(T.copied); haptic("ok"); } },
+    });
+  }
+
+  function qrPanel(value) {
+    const target = el("div", { class: "qr-target" });
+    queueMicrotask(() => {
+      if (!target.isConnected || !window.QRCode) return;
+      new window.QRCode(target, { text: value, width: 216, height: 216, colorDark: "#07110e", colorLight: "#ffffff", correctLevel: window.QRCode.CorrectLevel.M });
+    });
+    return el("div", { class: "qr-panel" }, [
+      target,
+      el("p", { text: T === RU ? "Отсканируйте камерой или приложением на другом устройстве" : "Scan with a camera or app on another device" }),
+    ]);
+  }
+
+  function openConnect() {
+    state.tab = "connect";
+    haptic();
+    render();
+    if (!state.connection) loadConnection();
+  }
+
   function connectScreen() {
     const conn = state.connection;
     const platforms = (conn && conn.platforms) || [];
     const detected = detectPlatform();
-    if (!state.connectionPlatform && platforms.length) {
-      state.connectionPlatform = (platforms.find((p) => p.id === detected) || platforms[0]).id;
-    }
+    if (!state.connectionPlatform && platforms.length) state.connectionPlatform = (platforms.find((p) => p.id === detected) || platforms[0]).id;
     const platform = platforms.find((p) => p.id === state.connectionPlatform) || platforms[0];
-    if (platform && !platform.apps.some((a) => a.id === state.connectionApp)) {
-      state.connectionApp = platform.apps[0] && platform.apps[0].id;
-      state.tvPair = null;
-    }
+    if (platform && !platform.apps.some((a) => a.id === state.connectionApp)) state.connectionApp = platform.apps[0] && platform.apps[0].id;
     const selected = platform && platform.apps.find((a) => a.id === state.connectionApp);
-    const frag = [];
-    frag.push(
-      el("div", { class: "screen-intro fade" }, [
-        el("span", { class: "home-eyebrow", text: T === RU ? "Подключение" : "Connection" }),
-        el("h1", { text: T === RU ? "Добавьте устройство" : "Add a device" }),
-        el("p", { text: T === RU ? "Выберите устройство и приложение — персональная подписка придёт из Remnawave автоматически." : "Choose a device and app — your personal subscription is loaded automatically." }),
-      ]),
-    );
+    const frag = [el("div", { class: "screen-intro fade" }, [
+      el("span", { class: "home-eyebrow", text: T === RU ? "Подключение" : "Connection" }),
+      el("h1", { text: T === RU ? "Добавьте устройство" : "Add a device" }),
+      el("p", { text: T === RU ? "Выберите устройство и удобное приложение. Доступ уже готов." : "Choose a device and a convenient app. Your access is ready." }),
+    ])];
     if (!conn) {
-      frag.push(el("div", { class: "card fade connect-card" }, [
-        el("button", { class: "btn primary", onclick: loadConnection, text: btnText("get_link", T.getLink) }),
+      if (!state.connectionLoading && !state.connectionError) queueMicrotask(loadConnection);
+      frag.push(el("div", { class: "card fade connect-card connection-loading" }, [
+        state.connectionError
+          ? el("p", { text: T === RU ? "Не удалось загрузить данные подключения. Откройте раздел ещё раз." : "Could not load connection details. Open this section again." })
+          : el("div", { class: "spinner" }),
       ]));
       return frag.concat(customItems("connect"));
     }
-    frag.push(el("div", { class: "device-switch fade" }, platforms.map((p) =>
-      el("button", {
-        class: `device-chip${p.id === state.connectionPlatform ? " on" : ""}`,
-        onclick: () => { state.connectionPlatform = p.id; state.connectionApp = null; state.tvPair = null; render(); },
+    const devicePicker = el("details", { class: "device-picker fade" }, [
+      el("summary", {}, [el("span", { text: T === RU ? "Устройство" : "Device" }), el("b", { text: platform.label }), el("i", { text: "⌄" })]),
+      el("div", { class: "device-options" }, platforms.map((p) => el("button", {
+        class: p.id === platform.id ? "on" : "",
+        onclick: () => { state.connectionPlatform = p.id; state.connectionApp = null; state.qrOpen = false; render(); },
         text: p.label,
-      })
-    )));
-    frag.push(el("div", { class: "app-grid fade" }, (platform && platform.apps || []).map((a) =>
-      el("button", {
-        class: `app-choice${a.id === state.connectionApp ? " on" : ""}`,
-        onclick: () => { state.connectionApp = a.id; state.tvPair = null; render(); },
-      }, [
-        a.icon_url ? el("img", { src: a.icon_url, alt: "" }) : el("span", { class: "app-fallback", text: a.name.slice(0, 1) }),
-        el("span", {}, [el("b", { text: a.name }), el("small", { text: pLabel(platform.id) })]),
-      ])
-    )));
-    if (selected) frag.push(
-      el("div", { class: "card fade connect-card featured app-guide" }, [
-        el("div", { class: "guide-head" }, [
-          selected.icon_url ? el("img", { class: "guide-icon", src: selected.icon_url, alt: "" }) : el("span", { class: "guide-icon app-fallback", text: selected.name.slice(0, 1) }),
-          el("div", {}, [el("span", { class: "home-eyebrow", text: platform.label }), el("h2", { text: selected.name })]),
-        ]),
-        el("div", { class: "guide-steps" }, [
-          el("div", {}, [el("span", { text: "1" }), el("p", { text: selected.instruction || (T === RU ? "Установите приложение на устройство." : "Install the app.") })]),
-          el("div", {}, [el("span", { text: "2" }), el("p", { text: platform.tv ? (T === RU ? "В Happ на телевизоре выберите Web Import — приложение покажет временный код или QR." : "Choose Web Import in Happ on the TV — the app will show a temporary code or QR.") : (T === RU ? "Нажмите «Добавить подписку» — приложение получит актуальную конфигурацию Remnawave." : "Tap Add subscription to import the current Remnawave configuration.") })]),
-          el("div", {}, [el("span", { text: "3" }), el("p", { text: T === RU ? "Разрешите VPN-подключение и включите его." : "Allow the VPN profile and connect." })]),
-        ]),
-        selected.download_url ? el("button", { class: "btn ghost", onclick: () => (wa && wa.openLink ? wa.openLink(selected.download_url) : window.open(selected.download_url)), text: `↓ ${T.download} ${selected.name}` }) : el("div", { class: "missing-link", text: T === RU ? "Ссылка на скачивание пока не заполнена владельцем" : "Download link is not configured yet" }),
-        platform.tv && selected.tv_web_import_url ? el("div", { class: "tv-actions" }, [
-          el("button", { class: "btn primary", onclick: async () => {
-            if (await copyText(selected.tv_transfer_value)) {
-              toast(T === RU ? "Подписка скопирована" : "Subscription copied");
-              haptic("ok");
-              wa && wa.openLink ? wa.openLink(selected.tv_web_import_url) : window.open(selected.tv_web_import_url);
-            }
-          }, text: T === RU ? "Скопировать и открыть Web Import" : "Copy and open Web Import" }),
-          el("button", { class: "btn ghost", onclick: () => (wa && wa.openLink ? wa.openLink(selected.tv_help_url) : window.open(selected.tv_help_url)), text: T === RU ? "Инструкция для телевизора" : "TV instructions" }),
-          el("div", { class: "tv-note", text: T === RU ? "Быстрее: откройте «+» в Happ на ТВ и отсканируйте QR мобильным Happ — телефон и телевизор должны быть в одной Wi‑Fi сети." : "Faster: open + in Happ on TV and scan its QR with Happ on your phone while both are on the same Wi-Fi." }),
-        ]) : el("button", { class: "btn primary", onclick: () => { haptic(); location.href = selected.import_url; }, text: T === RU ? "Добавить подписку" : "Add subscription" }),
-        conn.hide_link ? null : el("button", { class: "btn link-copy", onclick: async () => { (await copyText(conn.subscription_url)) && toast(T.copied); }, text: T.copy }),
-      ].filter(Boolean)),
-    );
+      }))),
+    ]);
+    frag.push(devicePicker);
+    frag.push(el("div", { class: "app-grid fade" }, (platform.apps || []).map((a) => el("button", {
+      class: `app-choice${a.id === state.connectionApp ? " on" : ""}`,
+      onclick: () => { state.connectionApp = a.id; state.qrOpen = false; render(); },
+    }, [
+      a.icon_url ? el("img", { src: a.icon_url, alt: "" }) : el("span", { class: "app-fallback", text: a.name.slice(0, 1) }),
+      el("span", {}, [el("b", { text: a.name }), el("small", { text: pLabel(platform.id) })]),
+    ]))));
+    if (selected) frag.push(el("div", { class: "card fade connect-card featured app-guide" }, [
+      el("div", { class: "guide-head" }, [
+        selected.icon_url ? el("img", { class: "guide-icon", src: selected.icon_url, alt: "" }) : el("span", { class: "guide-icon app-fallback", text: selected.name.slice(0, 1) }),
+        el("div", {}, [el("span", { class: "home-eyebrow", text: platform.label }), el("h2", { text: selected.name })]),
+      ]),
+      el("p", { class: "guide-copy", text: selected.instruction || (T === RU ? "Установите приложение и добавьте доступ." : "Install the app and add access.") }),
+      selected.download_url ? el("button", { class: "btn ghost", onclick: () => (wa && wa.openLink ? wa.openLink(selected.download_url) : window.open(selected.download_url)), text: `↓ ${T.download} ${selected.name}` }) : null,
+      platform.tv && selected.tv_web_import_url ? el("div", { class: "tv-actions" }, [
+        el("button", { class: "btn primary", onclick: async () => { if (await copyText(selected.tv_transfer_value)) { toast(T === RU ? "Подписка скопирована" : "Subscription copied"); haptic("ok"); wa && wa.openLink ? wa.openLink(selected.tv_web_import_url) : window.open(selected.tv_web_import_url); } }, text: T === RU ? "Открыть Web Import" : "Open Web Import" }),
+        el("button", { class: "btn ghost", onclick: () => (wa && wa.openLink ? wa.openLink(selected.tv_help_url) : window.open(selected.tv_help_url)), text: T === RU ? "Инструкция для телевизора" : "TV instructions" }),
+      ]) : el("a", { class: "btn primary import-link", href: selected.import_url, onclick: () => haptic() }, [T === RU ? "Добавить подписку" : "Add subscription"]),
+      el("div", { class: "subscription-link" }, [el("code", { text: conn.subscription_url }), copyIconButton(conn.subscription_url)]),
+      el("button", { class: "btn qr-button", onclick: () => { state.qrOpen = !state.qrOpen; render(); }, text: state.qrOpen ? (T === RU ? "Скрыть QR-код" : "Hide QR code") : (T === RU ? "Показать QR-код" : "Show QR code") }),
+      state.qrOpen ? qrPanel(conn.subscription_url) : null,
+    ].filter(Boolean)));
     return frag.concat(customItems("connect"));
   }
 
@@ -813,12 +822,18 @@
   }
 
   async function loadConnection() {
+    if (state.connectionLoading || state.connection) return;
     haptic();
+    state.connectionLoading = true;
+    state.connectionError = false;
     try {
       state.connection = await api("GET", "/api/cabinet/connection");
-      render();
     } catch {
+      state.connectionError = true;
       toast(T.noSub);
+    } finally {
+      state.connectionLoading = false;
+      render();
     }
   }
 
@@ -889,7 +904,7 @@
       haptic();
       render();
       window.scrollTo({ top: 0, behavior: "auto" });
-      if (state.tab === "connect" && !state.connection && mock) state.connection = window.__MOCK__.connection, render();
+      if (state.tab === "connect" && !state.connection) loadConnection();
     });
   });
 

@@ -463,9 +463,18 @@ async def test_public_landing_telegram_gateway_is_independent_from_bot_button(
     assert 'document.body.dataset.mode = "dark"' in miniapp_js
     assert 'wa.onEvent("themeChanged"' not in miniapp_js
     assert "step-num" not in miniapp_js
-    assert 'class: "device-switch fade"' in miniapp_js
+    assert 'class: "device-picker fade"' in miniapp_js
+    assert 'class: "subscription-link"' in miniapp_js
+    assert 'class: "btn qr-button"' in miniapp_js
+    assert "Remnawave автоматически" not in miniapp_js
     assert "class: `app-choice" in miniapp_js
     assert 'class: "legal-link"' in miniapp_js
+    assert (await http.get("/app/vendor/qrcode.min.js")).status_code == 200
+    web_page = (await http.get("/web/")).text
+    web_js = (await http.get("/web/app.js")).text
+    assert 'src="vendor/qrcode.min.js"' in web_page
+    assert 'class: "subscription-link"' in web_js
+    assert 'class: "btn qr-button"' in web_js
     miniapp_logo = await http.get("/app/assets/nasvyazi-logo.png")
     assert miniapp_logo.status_code == 200
     assert miniapp_logo.headers["content-type"] == "image/png"

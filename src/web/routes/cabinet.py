@@ -748,19 +748,19 @@ async def connection(
             if user.current_subscription_id
             else None
         )
-        hide_link = bool(await container.bot_config.value(uow, "HIDE_SUBSCRIPTION_LINK"))
         miniapp = await uow.miniapp.get_or_create()
     if sub is None or not sub.status.is_usable or not sub.subscription_url:
         raise HTTPException(404, "no active subscription")
     url = sub.subscription_url
     return {
-        # When the owner hides the raw link, the app still imports via deep links; it just
-        # doesn't render the copyable URL box (HIDE-1). Deep links stay so import keeps working.
-        "subscription_url": None if hide_link else url,
+        # The authenticated connection centre intentionally shows the personal URL: users need
+        # to copy it into clients that do not support a deep link and to display a local QR code.
+        # HIDE_SUBSCRIPTION_LINK still applies to the bot's ordinary message payloads.
+        "subscription_url": url,
         "expires_at": sub.expire_at.isoformat() if sub.expire_at else None,
         "deep_links": build_deep_links(url, sub.crypto_link),
         "platforms": materialize_connection_catalog(miniapp.ui, url, sub.crypto_link),
-        "hide_link": hide_link,
+        "hide_link": False,
     }
 
 
