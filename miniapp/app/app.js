@@ -36,6 +36,7 @@
     version: "v2 · VLESS", loading: "Загрузка…",
     period: "Срок", traffic: "Трафик", unlimited: "∞ безлимит",
     soon: "Тарифы скоро появятся", soonSub: "Мы уже готовим планы — загляните позже.",
+    documents: "Документы", privacy: "Политика конфиденциальности", offer: "Публичная оферта",
   };
   const EN = {
     ...RU,
@@ -62,6 +63,7 @@
     loading: "Loading…",
     period: "Period", traffic: "Traffic", unlimited: "∞ unlimited",
     soon: "Plans coming soon", soonSub: "We're setting up plans — check back later.",
+    documents: "Documents", privacy: "Privacy policy", offer: "Public offer",
   };
   let T = RU;
 
@@ -674,6 +676,28 @@
             },
             text: T === RU ? "Подключить" : "Connect",
           }),
+        ]),
+      );
+    }
+    const legalLinks = [
+      [T.privacy, me.app.privacy_policy_url],
+      [T.offer, me.app.public_offer_url],
+    ].filter((item) => /^https:\/\//i.test(item[1] || ""));
+    if (legalLinks.length) {
+      frag.push(
+        el("div", { class: "card fade legal-card" }, [
+          el("div", { class: "h-cap", text: "📄 " + T.documents }),
+          ...legalLinks.map((item) =>
+            el("button", {
+              class: "legal-link",
+              onclick: () => {
+                haptic();
+                wa && wa.openLink
+                  ? wa.openLink(item[1])
+                  : window.open(item[1], "_blank", "noopener");
+              },
+            }, [el("span", { text: item[0] }), el("span", { text: "↗" })]),
+          ),
         ]),
       );
     }

@@ -160,6 +160,8 @@ async def me(
         sales_mode = str(await cfg.value(uow, "SALES_MODE"))
         hide_link = bool(await cfg.value(uow, "HIDE_SUBSCRIPTION_LINK"))
         show_traffic = bool(await cfg.value(uow, "SHOW_TRAFFIC_USAGE"))
+        privacy_policy_url = str(await cfg.value(uow, "PRIVACY_POLICY_URL") or "")
+        public_offer_url = str(await cfg.value(uow, "PUBLIC_OFFER_URL") or "")
         gateways = [
             {"id": g.type.value, "label": g.display_name or g.type.value}
             for g in await uow.payment_gateways.list()
@@ -193,6 +195,8 @@ async def me(
             "balance_enabled": bool(await container.bot_config.value(uow, "BALANCE_ENABLED")),
             "hide_subscription_link": hide_link,
             "show_traffic_usage": show_traffic,  # #8: honored by bot; now exposed to cabinets too
+            "privacy_policy_url": privacy_policy_url,
+            "public_offer_url": public_offer_url,
             "sales_mode": sales_mode,
         },
     }
@@ -296,6 +300,8 @@ async def public_landing(container: AppContainer = Depends(get_container)) -> di
         bot_username = str(await cfg.value(uow, "BOT_USERNAME") or "")
         gateway_enabled = bool(await cfg.value(uow, "LANDING_TELEGRAM_GATEWAY_ENABLED"))
         proxy_url = _public_proxy_link(str(await cfg.value(uow, "MTPROTO_PROXY_URL") or ""))
+        privacy_policy_url = str(await cfg.value(uow, "PRIVACY_POLICY_URL") or "")
+        public_offer_url = str(await cfg.value(uow, "PUBLIC_OFFER_URL") or "")
         # The web cabinet is always mounted at /web on this same origin. Use the relative
         # path (not CABINET_URL, which may be a bare domain now fronted by this landing —
         # that would loop the «Личный кабинет» button back here).
@@ -323,6 +329,8 @@ async def public_landing(container: AppContainer = Depends(get_container)) -> di
         "cabinet_url": cabinet_url,
         "telegram_gateway_url": "/telegram/" if gateway_ready else None,
         "mtproto_proxy_url": proxy_url if gateway_ready else None,
+        "privacy_policy_url": privacy_policy_url,
+        "public_offer_url": public_offer_url,
         "currency": "RUB",
         "plans": await _plan_items(container),
     }

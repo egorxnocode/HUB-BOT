@@ -332,6 +332,9 @@ body[data-variant][data-mode="dark"] .btn.primary {
 .profile-balance { margin-left: auto; text-align: right; }
 .profile-balance b { font-size: 18px; }
 .account-summary { padding: 8px 20px; }
+.legal-card { padding: 10px 16px 8px; }
+.legal-link { width: 100%; min-height: 48px; padding: 0; border: 0; border-top: 1px solid var(--line); background: transparent; color: var(--ink); display: flex; align-items: center; justify-content: space-between; gap: 14px; font: inherit; text-align: left; cursor: pointer; }
+.legal-link span:last-child { color: var(--acc); font-size: 18px; }
 .li {
   display: flex;
   align-items: center;

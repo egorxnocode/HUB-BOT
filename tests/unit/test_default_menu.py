@@ -8,6 +8,7 @@ from src.bot.default_menu import DEFAULT_MENU, MENU_ACTIONS, action, is_action
 def test_action_codes_unique() -> None:
     codes = [a.code for a in MENU_ACTIONS]
     assert len(codes) == len(set(codes))
+    assert "documents" in codes
 
 
 def test_default_menu_uses_known_actions() -> None:

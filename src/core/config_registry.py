@@ -660,6 +660,26 @@ REGISTRY: tuple[ParamSpec, ...] = (
         "Для режима «bot»: @username отдельного саппорт-бота, кнопка открывает его",
         "For «bot» mode: the separate support bot's @username",
     ),
+    _p(
+        "PRIVACY_POLICY_URL",
+        C.INTERFACE,
+        STR,
+        "https://telegra.ph/POLITIKA-KONFIDENCIALNOSTI-07-14-52",
+        "Политика конфиденциальности",
+        "Privacy policy URL",
+        "Публичная HTTPS-ссылка; показывается в боте, Mini App и на сайте",
+        "Public HTTPS URL shown in the bot, Mini App and website",
+    ),
+    _p(
+        "PUBLIC_OFFER_URL",
+        C.INTERFACE,
+        STR,
+        "https://telegra.ph/PUBLICHNAYA-OFERTA-07-14-6",
+        "Публичная оферта",
+        "Public offer URL",
+        "Публичная HTTPS-ссылка; показывается в боте, Mini App и на сайте",
+        "Public HTTPS URL shown in the bot, Mini App and website",
+    ),
     # --- AI SUPPORT ---------------------------------------------------------------
     _p(
         "AI_SUPPORT_ENABLED",

@@ -303,6 +303,7 @@ async def act_cabinet(cb: CallbackQuery | Message, container: AppContainer, db_u
         entries.append(("🎁 Рефералка", "act:referral:0"))
     entries.append(("🎟 Промокод", "act:promocode"))
     entries.append(("🆘 Поддержка", "act:support:0"))
+    entries.append(("📄 Документы", "act:documents:0"))
     kb: list[list[InlineKeyboardButton]] = [
         [InlineKeyboardButton(text=t, callback_data=c) for t, c in entries[i : i + 2]]
         for i in range(0, len(entries), 2)
@@ -314,6 +315,32 @@ async def act_cabinet(cb: CallbackQuery | Message, container: AppContainer, db_u
         cb, container, "cabinet", "\n".join(lines), InlineKeyboardMarkup(inline_keyboard=kb)
     )
     await ack(cb)
+
+
+@router.callback_query(F.data.startswith("act:documents"))
+async def act_documents(
+    cb: CallbackQuery | Message, container: AppContainer, db_user: User
+) -> None:
+    """Show the owner-configured legal documents from every bot menu."""
+    del db_user  # common action signature used by reply-menu dispatch
+    async with container.uow() as uow:
+        privacy = str(await container.bot_config.value(uow, "PRIVACY_POLICY_URL") or "")
+        offer = str(await container.bot_config.value(uow, "PUBLIC_OFFER_URL") or "")
+    rows: list[list[InlineKeyboardButton]] = []
+    if privacy.startswith("https://"):
+        rows.append([InlineKeyboardButton(text="🔐 Политика конфиденциальности", url=privacy)])
+    if offer.startswith("https://"):
+        rows.append([InlineKeyboardButton(text="📃 Публичная оферта", url=offer)])
+    rows.append([InlineKeyboardButton(text="‹ Меню", callback_data="nav:root")])
+    await render_screen(
+        cb,
+        container,
+        "cabinet",
+        "<b>📄 Документы</b>\n\n"
+        "Актуальные условия использования сервиса и правила обработки данных.",
+        InlineKeyboardMarkup(inline_keyboard=rows),
+    )
+    await safe_answer(cb)
 
 
 @router.callback_query(F.data.startswith("act:connect"))
