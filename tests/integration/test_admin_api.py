@@ -467,6 +467,9 @@ async def test_public_landing_telegram_gateway_is_independent_from_bot_button(
     assert 'class: "subscription-link"' in miniapp_js
     assert 'class: "btn qr-button"' in miniapp_js
     assert "qrPanel(selected.import_url)" in miniapp_js
+    assert 'class: "tariff-picker"' in miniapp_js
+    assert 'class: "payment-options"' in miniapp_js
+    assert "checkout-button" in miniapp_js
     assert "Remnawave автоматически" not in miniapp_js
     assert "class: `app-choice" in miniapp_js
     assert 'class: "legal-link"' in miniapp_js

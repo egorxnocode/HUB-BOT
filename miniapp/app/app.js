@@ -210,17 +210,21 @@
   // ---------- screens ----------
   function payChips(starsCount) {
     const me = state.me;
-    return el("div", { class: "chips" }, [
+    const option = (id, icon, label, value) => el("button", {
+      class: `payment-option${state.paySel === id ? " on" : ""}`,
+      onclick: () => { state.paySel = id; haptic(); render(); },
+    }, [
+      el("span", { class: "payment-icon", text: icon }),
+      el("span", { class: "payment-copy" }, [el("b", { text: label }), el("small", { text: value })]),
+      el("span", { class: "payment-radio" }),
+    ]);
+    return el("div", { class: "payment-options" }, [
       me && me.app.balance_enabled === false
         ? null
-        : el("button", { class: `chip${state.paySel === "balance" ? " on" : ""}`, onclick: () => { state.paySel = "balance"; render(); }, text: `${T.payBalance} · ${me ? money(me.user.balance_minor) : ""}` }),
-      el("button", { class: `chip${state.paySel === "stars" ? " on" : ""}`, onclick: () => { state.paySel = "stars"; render(); }, text: `⭐ ${T.payStars} · ${starsCount}` }),
+        : option("balance", "₽", T.payBalance, me ? money(me.user.balance_minor) : ""),
+      option("stars", "★", T.payStars, `${starsCount}`),
       ...((me && me.app.payment_methods) || []).map((pm) =>
-        el("button", {
-          class: `chip${state.paySel === pm.id ? " on" : ""}`,
-          onclick: () => { state.paySel = pm.id; render(); },
-          text: `💳 ${pm.label}`,
-        }),
+        option(pm.id, "▰", pm.label, T === RU ? "Онлайн-оплата" : "Online payment"),
       ),
     ]);
   }
@@ -313,7 +317,7 @@
         const stars = Math.max(1, Math.ceil(total / Math.max(1, c.stars_rate || 1)));
         frag.push(
           el("div", { class: "card fade plans-card" }, [
-            el("div", { class: "h-cap", text: T.period }),
+            el("div", { class: "plan-section-title", text: T.period }),
             el(
               "div",
               { class: "plans-row" },
@@ -331,7 +335,7 @@
                 ),
               ),
             ),
-            el("div", { class: "h-cap", style: "margin-top:14px", text: T.traffic }),
+            el("div", { class: "plan-section-title", text: T.traffic }),
             el(
               "div",
               { class: "chips" },
@@ -343,14 +347,13 @@
                 }),
               ),
             ),
-            el("div", { class: "h-cap", style: "margin-top:14px", text: T.payMethod }),
+            el("div", { class: "plan-section-title", text: T.payMethod }),
             payChips(stars),
             el("button", {
-              class: "btn primary",
-              style: "margin-top:14px;" + btnStyle("renew"),
+              class: "btn primary checkout-button",
+              style: btnStyle("renew"),
               onclick: () => submitPurchase({ period_id: per.id, pack_id: pack.id }),
-              text: `${btnText("renew", usable ? T.renew : T.buy)} · ${money(total)}`,
-            }),
+            }, [el("span", { text: btnText("renew", usable ? T.renew : T.buy) }), el("strong", { text: money(total) })]),
           ]),
         );
       } else {
@@ -374,20 +377,21 @@
       const base = durs[0] ? durs[0].price_minor / durs[0].days : 0;
       frag.push(
         el("div", { class: "card fade plans-card" }, [
-          el("div", { class: "h-cap", text: T.choosePlan }),
           allPlans.length > 1
-            ? el(
-                "div",
-                { class: "chips", style: "margin-bottom:10px" },
-                allPlans.map((p, i) =>
+            ? el("details", { class: "tariff-picker" }, [
+                el("summary", {}, [
+                  el("span", {}, [el("small", { text: T.choosePlan }), el("b", { text: plan.name })]),
+                  el("i", { text: "⌄" }),
+                ]),
+                el("div", { class: "tariff-options" }, allPlans.map((p, i) =>
                   el("button", {
-                    class: `chip${(state.tariffSel || 0) === i ? " on" : ""}`,
+                    class: (state.tariffSel || 0) === i ? "on" : "",
                     onclick: () => { state.tariffSel = i; state.planSel = 0; haptic(); render(); },
-                    text: p.name,
-                  }),
-                ),
-              )
-            : null,
+                  }, [el("span", { text: p.name }), el("i", { text: (state.tariffSel || 0) === i ? "✓" : "" })]),
+                )),
+              ])
+            : el("div", { class: "single-tariff" }, [el("small", { text: T.choosePlan }), el("b", { text: plan.name })]),
+          el("div", { class: "plan-section-title", text: T.period }),
           el(
             "div",
             { class: "plans-row" },
@@ -405,17 +409,19 @@
                   },
                 },
                 [
-                  i === 1 ? el("span", { class: "badge", text: "★" }) : null,
                   el("div", { class: "m", text: `${d.months} мес` }),
                   el("div", { class: "p", text: money(d.price_minor) }),
-                  el("div", { class: "d", text: disc > 0 ? `−${disc}%` : "" }),
+                  el("div", { class: "d", text: disc > 0 ? `${T === RU ? "Выгода" : "Save"} ${disc}%` : T === RU ? "Базовая цена" : "Base price" }),
                 ],
               );
             }),
           ),
-          el("div", { class: "h-cap", style: "margin-top:14px", text: T.payMethod }),
+          el("div", { class: "plan-section-title", text: T.payMethod }),
           payChips(sel ? sel.price_stars : ""),
-          el("button", { class: "btn primary", style: "margin-top:14px;" + btnStyle("renew"), onclick: () => purchase(plan, sel), text: `${btnText("renew", usable ? T.renew : T.buy)} · ${sel ? money(sel.price_minor) : ""}` }),
+          el("button", { class: "btn primary checkout-button", style: btnStyle("renew"), onclick: () => purchase(plan, sel) }, [
+            el("span", { text: btnText("renew", usable ? T.renew : T.buy) }),
+            el("strong", { text: sel ? money(sel.price_minor) : "" }),
+          ]),
         ]),
       );
     }
