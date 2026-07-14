@@ -18,28 +18,13 @@ const VERSION = "CORE v0.1.0 · CABINET v0.2.0";
 export function BrandLogo({ size = 15 }: { size?: number }) {
   return (
     <span
+      className="admin-brand"
       style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 5,
-        fontFamily: "'Arial Black','Arial Bold',Arial,sans-serif",
-        fontWeight: 900,
         fontSize: size,
-        letterSpacing: "-0.5px",
-        lineHeight: 1,
       }}
     >
-      <span style={{ color: "var(--text)" }}>VPN</span>
-      <span
-        style={{
-          background: "#F7971D",
-          color: "#000",
-          borderRadius: size * 0.28,
-          padding: `${size * 0.14}px ${size * 0.38}px`,
-        }}
-      >
-        HUB
-      </span>
+      <span className="admin-brand-mark" aria-hidden="true" />
+      <span className="admin-brand-copy"><strong>На связи</strong><small>управление сервисом</small></span>
     </span>
   );
 }
@@ -113,7 +98,6 @@ export default function Layout() {
         <div className="side-logo">
           <div className="row" style={{ gap: 8 }}>
             <BrandLogo size={16} />
-            <span className="caps" style={{ letterSpacing: "0.12em" }}>CABINET</span>
           </div>
           <div style={{ position: "relative", marginTop: 12 }}>
             <span className="dim" style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)", fontSize: 13 }}>⌕</span>
