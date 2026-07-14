@@ -6,25 +6,30 @@
       name="viewport"
       content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no"
     />
-    <title>VPN</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Nunito:wght@600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Unbounded:wght@600;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="app.css" />
+    <meta name="theme-color" content="#0f1815" />
+    <title>На связи</title>
+    <link rel="stylesheet" href="app.css?v=brand-v1" />
   </head>
-  <body data-variant="a" data-mode="light">
+  <body data-variant="a" data-mode="dark">
+    <header class="app-header">
+      <div class="app-brand">
+        <svg viewBox="0 0 40 40" aria-hidden="true">
+          <circle cx="20" cy="20" r="19" fill="currentColor" />
+          <path d="M10 18.5c5.5-5 14.5-5 20 0M14 23.5c3.4-3.1 8.6-3.1 12 0M19 28h2" fill="none" stroke="#072a23" stroke-width="2.5" stroke-linecap="round" />
+        </svg>
+        <span><strong>На связи</strong><small>личный кабинет</small></span>
+      </div>
+      <span id="appAvatar" class="app-avatar">Н</span>
+    </header>
     <div id="screen" class="screen"></div>
     <nav id="tabs" class="tabs">
-      <button data-tab="home" class="on"><span class="t-ico">⌂</span><span data-i18n="tabHome">Главная</span></button>
-      <button data-tab="connect"><span class="t-ico">⚡</span><span data-i18n="tabConnect">Подключение</span></button>
-      <button data-tab="account"><span class="t-ico">◉</span><span data-i18n="tabAccount">Кабинет</span></button>
+      <button data-tab="home" class="on"><svg class="t-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="m4 10 8-6 8 6v9a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1v-9Z" /></svg><span data-i18n="tabHome">Главная</span></button>
+      <button data-tab="connect"><svg class="t-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 5 14h6l-1 8 8-12h-6l1-8Z" /></svg><span data-i18n="tabConnect">Подключение</span></button>
+      <button data-tab="account"><svg class="t-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4.5 21a7.5 7.5 0 0 1 15 0" /></svg><span data-i18n="tabAccount">Кабинет</span></button>
     </nav>
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="mock.js"></script>
-    <script src="app.js"></script>
+    <script src="app.js?v=brand-v1"></script>
   </body>
 </html>

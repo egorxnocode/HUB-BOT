@@ -1,6 +1,4 @@
-/* Mini-app v2 — one layout, 8 themes (palettes extracted 1:1 from the design source).
-   body[data-variant=a..h] picks the theme, body[data-mode=light|dark] the scheme.
-   a Минимал · b Прайват · c Бадди · d Нативный · e Терминал · f Журнал · g Неон · h Поп */
+/* NaSvyazi client cabinet — dark-only brand shell over the existing Mini App runtime. */
 
 * {
   box-sizing: border-box;
@@ -20,29 +18,21 @@ body {
   transition: background 0.25s;
 }
 
-/* ---------- palettes (from design P.a..P.h) ---------- */
-body[data-variant="a"][data-mode="light"] { --bg:#F5F6F8; --card:#FFFFFF; --ink:#161A20; --sub:#7A828E; --line:#E8EAEF; --acc:#2E63E7; --accInk:#FFFFFF; --soft:#EDF2FE; --chip:#F0F2F6; --tabbg:#FFFFFF; --ok:#189A62; --warn:#C4483A; --ringoff:#D3D8DF; }
+/* ---------- legacy dark palettes (shape compatibility for stored templates) ---------- */
 body[data-variant="a"][data-mode="dark"]  { --bg:#0E1013; --card:#181B21; --ink:#EFF1F5; --sub:#8D96A3; --line:#272C34; --acc:#6E96FF; --accInk:#0D1117; --soft:#1D2636; --chip:#20242C; --tabbg:#14171C; --ok:#3ECF8E; --warn:#FF7A66; --ringoff:#3A4149; }
 
-body[data-variant="b"][data-mode="light"] { --bg:#F4F2EC; --card:#FFFFFF; --ink:#1D1A14; --sub:#8A8272; --line:#E6E1D2; --acc:#1E4B39; --accInk:#F4F1E6; --soft:#EDE9DC; --chip:#EDE9DC; --tabbg:#FFFFFF; --ok:#2E7D5B; --warn:#B0442F; --gold:#A5824A; }
 body[data-variant="b"][data-mode="dark"]  { --bg:#121310; --card:#1B1D19; --ink:#ECE7DA; --sub:#95907E; --line:#2B2E27; --acc:#C9A45C; --accInk:#191510; --soft:#232620; --chip:#232620; --tabbg:#171914; --ok:#5CBB8F; --warn:#E06B52; --gold:#C9A45C; }
 
-body[data-variant="c"][data-mode="light"] { --bg:#FBF1E7; --card:#FFFFFF; --ink:#3B2E3E; --sub:#9A8CA0; --line:#F0E2D4; --acc:#EF7048; --accInk:#FFFFFF; --soft:#FCE9DE; --chip:#F7EFE6; --tabbg:#FFFFFF; --ok:#3FBF97; --warn:#D64545; }
 body[data-variant="c"][data-mode="dark"]  { --bg:#1B1526; --card:#271F38; --ink:#F5EFF8; --sub:#A99DB8; --line:#39304E; --acc:#FF8B5C; --accInk:#2B1508; --soft:#3C2A24; --chip:#2E2540; --tabbg:#211A2F; --ok:#4FD3A8; --warn:#FF6B6B; }
 
-body[data-variant="d"][data-mode="light"] { --bg:#EFEFF4; --card:#FFFFFF; --ink:#0A0A0A; --sub:#8E8E93; --line:#E5E5EA; --acc:#2AA0DC; --accInk:#FFFFFF; --soft:#E7F4FC; --chip:#F2F2F7; --tabbg:#F9F9F9; --ok:#34C759; --warn:#FF3B30; }
 body[data-variant="d"][data-mode="dark"]  { --bg:#000000; --card:#1C1C1E; --ink:#FFFFFF; --sub:#98989E; --line:#2C2C2E; --acc:#4FB4E8; --accInk:#06202E; --soft:#0F2A3D; --chip:#2A2A2C; --tabbg:#121212; --ok:#30D158; --warn:#FF453A; }
 
-body[data-variant="e"][data-mode="light"] { --bg:#F2F4F1; --card:#FFFFFF; --ink:#17201B; --sub:#6F7D74; --line:#DFE5DF; --acc:#0C8F4E; --accInk:#FFFFFF; --soft:#E3F3E9; --chip:#EAEFEA; --tabbg:#FFFFFF; --ok:#0C8F4E; --warn:#C74E39; }
 body[data-variant="e"][data-mode="dark"]  { --bg:#0A0F0C; --card:#101712; --ink:#D9E6DC; --sub:#74907F; --line:#1F2D24; --acc:#3DF08C; --accInk:#06130B; --soft:#133021; --chip:#172219; --tabbg:#0D130F; --ok:#3DF08C; --warn:#FF6B5E; }
 
-body[data-variant="f"][data-mode="light"] { --bg:#F7F3EA; --card:#F7F3EA; --ink:#191512; --sub:#857D70; --line:#D8D0C0; --acc:#C03B2D; --accInk:#FFF9EF; --soft:#F0E8D8; --chip:#EFE9DB; --tabbg:#F7F3EA; --ok:#2F7A4D; --warn:#C03B2D; }
 body[data-variant="f"][data-mode="dark"]  { --bg:#171310; --card:#171310; --ink:#EDE6D9; --sub:#94897A; --line:#332C22; --acc:#E05B4B; --accInk:#1A0F0C; --soft:#262017; --chip:#221D15; --tabbg:#151110; --ok:#6DBB8C; --warn:#E06B52; }
 
-body[data-variant="g"][data-mode="light"] { --bg:linear-gradient(160deg,#EEE9FF,#E6F0FF 50%,#F3E8FF); --card:rgba(255,255,255,0.6); --ink:#221A3A; --sub:#7B729A; --line:rgba(124,92,255,0.22); --acc:#7C5CFF; --acc2:#1FC7E0; --accInk:#FFFFFF; --soft:rgba(124,92,255,0.16); --chip:rgba(255,255,255,0.55); --tabbg:rgba(255,255,255,0.65); --ok:#22B573; --warn:#E1495A; }
 body[data-variant="g"][data-mode="dark"]  { --bg:linear-gradient(160deg,#150E33,#1A1243 45%,#2B1254); --card:rgba(255,255,255,0.07); --ink:#F1EDFF; --sub:#9C93C4; --line:rgba(255,255,255,0.16); --acc:#9D7BFF; --acc2:#33E0F2; --accInk:#10082A; --soft:rgba(157,123,255,0.22); --chip:rgba(255,255,255,0.10); --tabbg:rgba(20,13,45,0.75); --ok:#3BE39B; --warn:#FF6B84; }
 
-body[data-variant="h"][data-mode="light"] { --bg:#F6F4EC; --card:#FFFFFF; --ink:#101010; --sub:#62625A; --line:#101010; --acc:#C8F04B; --accInk:#101010; --soft:#ECF7C8; --chip:#EFEDE0; --tabbg:#FFFFFF; --ok:#1F9D55; --warn:#E0442E; }
 body[data-variant="h"][data-mode="dark"]  { --bg:#141410; --card:#1D1D16; --ink:#F2F1E6; --sub:#9A9A8C; --line:#EDEBDC; --acc:#D3F55C; --accInk:#131308; --soft:#2C301A; --chip:#24241B; --tabbg:#191912; --ok:#7FD86B; --warn:#FF6B5E; }
 
 /* ---------- per-theme typography & shape ---------- */
@@ -60,20 +50,82 @@ body[data-variant="h"] { --font: "Unbounded", "Archivo Black", system-ui, sans-s
 body[data-variant="h"] .card { border: 2px solid var(--line); box-shadow: 4px 4px 0 var(--line); }
 body[data-variant="h"] .btn.primary { border: 2px solid var(--line); box-shadow: 3px 3px 0 var(--line); }
 
-/* ---------- layout ---------- */
-.screen {
-  max-width: 480px;
-  margin: 0 auto;
-  padding: 16px 14px 8px;
-  display: grid;
-  gap: 12px;
+/* One NaSvyazi brand, regardless of the legacy template value stored in admin. */
+body[data-variant][data-mode="dark"] {
+  --bg: #0f1815;
+  --card: #17231f;
+  --ink: #f1f6f3;
+  --sub: #9eaaa5;
+  --line: #2a3b34;
+  --acc: #48d7b4;
+  --accInk: #072a23;
+  --soft: #203b33;
+  --chip: #1d2d27;
+  --tabbg: rgba(15, 24, 21, .92);
+  --ok: #48d7b4;
+  --warn: #ff7a66;
+  --ringoff: #30443d;
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+  --radius: 22px;
 }
+body[data-variant][data-mode="dark"] .card {
+  border: 1px solid var(--line);
+  box-shadow: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+body[data-variant][data-mode="dark"] .btn.primary {
+  border: 0;
+  background: var(--acc);
+  box-shadow: none;
+}
+
+/* ---------- layout ---------- */
+.app-header {
+  width: min(520px, calc(100% - 28px));
+  min-height: 72px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--line);
+}
+.app-brand { display: flex; align-items: center; gap: 11px; }
+.app-brand svg { width: 39px; height: 39px; color: var(--acc); }
+.app-brand > span { display: grid; line-height: 1.1; }
+.app-brand strong { font-size: 16px; letter-spacing: -.02em; }
+.app-brand small { margin-top: 4px; color: var(--sub); font-size: 9px; letter-spacing: .09em; text-transform: uppercase; }
+.app-avatar { width: 36px; height: 36px; display: grid; place-items: center; border: 1px solid var(--line); border-radius: 50%; background: var(--card); color: var(--acc); font-size: 13px; font-weight: 800; }
+.screen {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 26px 14px 12px;
+  display: grid;
+  gap: 14px;
+}
+.home-intro { margin: 2px 2px 8px; }
+.home-eyebrow { color: var(--acc); font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+.home-intro h1 { margin: 8px 0 6px; font-size: 31px; line-height: 1.05; letter-spacing: -.045em; }
+.home-intro p { margin: 0; color: var(--sub); font-size: 14px; }
 .card {
   background: var(--card);
   border: 1px solid var(--line);
   border-radius: var(--radius, 14px);
   padding: 16px;
 }
+.status-card { position: relative; min-height: 224px; overflow: hidden; padding: 22px; background: var(--acc); color: var(--accInk); }
+.status-card::before { content: ""; position: absolute; width: 210px; height: 210px; right: -84px; top: -105px; border-radius: 50%; background: #6d9df5; opacity: .78; }
+.status-card::after { content: ""; position: absolute; width: 160px; height: 160px; left: -94px; bottom: -112px; border-radius: 50%; background: #efa75f; opacity: .72; }
+.status-card > * { position: relative; z-index: 1; }
+.status-card .sub { color: color-mix(in srgb, var(--accInk) 68%, transparent); }
+.status-card .dot { background: var(--accInk); box-shadow: 0 0 0 4px color-mix(in srgb, var(--accInk) 12%, transparent); }
+.status-card .big-num { margin-top: 28px; font-size: 68px; letter-spacing: -.06em; }
+.status-card .prog { height: 6px; margin-top: 22px !important; background: color-mix(in srgb, var(--accInk) 18%, transparent); }
+.status-card .prog > i { background: var(--accInk); }
+.plans-card { padding: 22px; }
+.plans-card .h-cap { color: var(--acc); font-weight: 800; }
+.referral-card { min-height: 92px; padding: 20px 22px; background: color-mix(in srgb, var(--acc) 8%, var(--card)); }
 .h-cap {
   font-size: 11px;
   letter-spacing: 0.08em;
@@ -285,12 +337,15 @@ body[data-variant="h"] .btn.primary { border: 2px solid var(--line); box-shadow:
 /* tabs */
 .tabs {
   position: fixed;
-  left: 0;
-  right: 0;
+  left: 50%;
+  width: min(520px, 100%);
   bottom: 0;
   display: flex;
+  transform: translateX(-50%);
   background: var(--tabbg);
-  border-top: 1px solid var(--line);
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  border-radius: 20px 20px 0 0;
   padding-bottom: env(safe-area-inset-bottom);
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
@@ -312,8 +367,20 @@ body[data-variant="h"] .btn.primary { border: 2px solid var(--line); box-shadow:
   color: var(--acc);
 }
 .t-ico {
-  font-size: 20px;
-  line-height: 1;
+  width: 21px;
+  height: 21px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@media (max-width: 560px) {
+  .app-header { width: calc(100% - 28px); }
+  .screen { padding-top: 22px; }
+  .status-card { min-height: 214px; }
+  .status-card .big-num { font-size: 62px; }
 }
 
 /* toast + skeleton */

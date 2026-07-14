@@ -13,10 +13,7 @@
   }
 
   function applyTheme(cfg) {
-    var mode = null;
-    try { mode = localStorage.getItem("site_mode"); } catch (e) {}
-    var preferred = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    document.body.dataset.mode = mode === "dark" || (!mode && preferred === "dark") ? "dark" : "light";
+    document.body.dataset.mode = "dark";
     if (cfg.accent_color && /^#[0-9a-fA-F]{6}$/.test(cfg.accent_color)) {
       document.documentElement.style.setProperty("--brand", cfg.accent_color);
     }
@@ -54,12 +51,6 @@
       });
     });
   }
-
-  $("#themeToggle").addEventListener("click", function () {
-    var next = document.body.dataset.mode === "dark" ? "light" : "dark";
-    document.body.dataset.mode = next;
-    try { localStorage.setItem("site_mode", next); } catch (e) {}
-  });
 
   fetch("/api/cabinet/public/landing")
     .then(function (response) { return response.ok ? response.json() : Promise.reject(); })

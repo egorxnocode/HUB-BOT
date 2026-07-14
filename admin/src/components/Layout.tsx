@@ -45,7 +45,7 @@ export function BrandLogo({ size = 15 }: { size?: number }) {
 }
 
 export default function Layout() {
-  const { t, theme, setTheme, lang, setLang } = useApp();
+  const { t, lang, setLang } = useApp();
   const qc = useQueryClient();
   const loc = useLocation();
   const nav = useNavigate();
@@ -189,14 +189,6 @@ export default function Layout() {
           <span className="crumbs">ADMIN / {current?.label ?? ""}</span>
           <span className="spacer" />
           <span className="cap-pill">● REMNAWAVE · OK</span>
-          <Seg
-            value={theme}
-            options={[
-              { id: "dark" as const, label: "DARK" },
-              { id: "light" as const, label: "LIGHT" },
-            ]}
-            onChange={setTheme}
-          />
           <Seg
             value={lang}
             options={[

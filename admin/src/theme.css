@@ -16,20 +16,6 @@ body[data-theme="dark"] {
   --inv: #0a0a0a;
 }
 
-body[data-theme="light"] {
-  --bg: #f5f5f5;
-  --panel: #ffffff;
-  --panel2: #fafafa;
-  --border: #e4e4e4;
-  --border2: #d2d2d2;
-  --text: #141414;
-  --muted: #6e6e6e;
-  --dim: #a3a3a3;
-  --pill: #ececec;
-  --hover: #f0f0f0;
-  --inv: #ffffff;
-}
-
 * {
   box-sizing: border-box;
 }
